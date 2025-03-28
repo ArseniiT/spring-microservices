@@ -1,0 +1,10 @@
+server.port: 8888
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/mousseta/spring-petclinic-microservices-config.git
+        native:
+          searchLocations: file:///${GIT_REPO}
+

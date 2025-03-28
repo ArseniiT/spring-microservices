@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: vets-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888/}
+  cache:
+    cache-names: vets
+  profiles:
+    active: default
+
+---
+spring:
+  config:
+    activate:
+      on-profile: default
+    import:  optional:configserver:http://config-server:8888

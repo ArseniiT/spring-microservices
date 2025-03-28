@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: customers-service
+  config:
+    import: optional:configserver:${http://localhost:8888/}
+
+
+---
+spring:
+  config:
+    activate:
+      on-profile: default
+    import:  optional:configserver:http://config-server:8888
