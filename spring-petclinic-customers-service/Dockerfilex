@@ -1,7 +1,0 @@
-FROM ubuntu
-RUN apt-get update -y
-RUN apt-get install wget -y
-RUN apt-get -qqy install openjdk-17-jdk openjdk-17-jre
-#copie du jar dans l'image docker
-COPY target/spring-petclinic-customers-service-3.0.2.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]

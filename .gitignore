@@ -33,8 +33,6 @@ Thumbs.db
 
 # Docker
 *.env
-**/Dockerfile
-**/docker-compose.yml
 
 # Spring Boot specific
 spring-petclinic-*/target/
