@@ -1,0 +1,64 @@
+services:
+
+  # Déclaration du service de découverte Eureka
+  discovery-server:
+    # Construction de l’image Docker à partir du Dockerfile situé dans ce dossier
+    build: ./spring-petclinic-discovery-server
+    ports:
+      # Exposition du port 8761 pour le service Eureka. Port de Host : Port de Container
+      - "8761:8761"
+
+  config-server:
+    build: ./spring-petclinic-config-server
+    # Définition des variables d’environnement nécessaires pour Eureka
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
+    ports:
+      - "8888:8888"
+    # Dépend du serveur Eureka pour fonctionner
+    depends_on:
+      - discovery-server
+
+  api-gateway:
+    build: ./spring-petclinic-api-gateway
+    ports:
+      - "8080:8080"
+    # Variable d’environnement pour pointer vers le serveur de configuration
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+    depends_on:
+      - discovery-server
+      - config-server
+
+  # Déclaration du microservice pour les clients (owners)
+  customers-service:
+    build: ./spring-petclinic-customers-service
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+    depends_on:
+      - discovery-server
+      - config-server
+
+  visits-service:
+    build: ./spring-petclinic-visits-service
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+    depends_on:
+      - discovery-server
+      - config-server
+
+  vets-service:
+    build: ./spring-petclinic-vets-service
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
+    depends_on:
+      - discovery-server
+      - config-server
+
+  admin-server:
+    build: ./spring-petclinic-admin-server
+    ports:
+      - "9090:9090"
+    depends_on:
+      - discovery-server
+      - config-server
