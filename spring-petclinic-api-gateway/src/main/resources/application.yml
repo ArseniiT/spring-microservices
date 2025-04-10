@@ -1,8 +1,10 @@
+# spring-petclinic-api-gateway/src/main/resources/application.yml
+
 spring:
   application:
     name: api-gateway
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888/}
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
   cloud:
     gateway:
       routes:
@@ -25,11 +27,7 @@ spring:
           filters:
             - StripPrefix=2
 
-
-
----
-spring:
-  config:
-    activate:
-      on-profile: default
-    import: optional:configserver:http://config-server:8888
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}

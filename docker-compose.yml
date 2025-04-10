@@ -1,64 +1,107 @@
-services:
 
-  # Déclaration du service de découverte Eureka
+services:
+  # Eureka Discovery Server (сначала должен быть запущен)
   discovery-server:
-    # Construction de l’image Docker à partir du Dockerfile situé dans ce dossier
     build: ./spring-petclinic-discovery-server
     ports:
-      # Exposition du port 8761 pour le service Eureka. Port de Host : Port de Container
       - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - petclinic-network
 
+  # Config Server (централизованный сервер конфигураций)
   config-server:
     build: ./spring-petclinic-config-server
-    # Définition des variables d’environnement nécessaires pour Eureka
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka
     ports:
       - "8888:8888"
-    # Dépend du serveur Eureka pour fonctionner
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
     depends_on:
-      - discovery-server
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - petclinic-network
 
+  # API Gateway
   api-gateway:
     build: ./spring-petclinic-api-gateway
     ports:
       - "8080:8080"
-    # Variable d’environnement pour pointer vers le serveur de configuration
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
     depends_on:
-      - discovery-server
       - config-server
+      - discovery-server
+      - customers-service
+      - visits-service
+      - vets-service
+    networks:
+      - petclinic-network
 
-  # Déclaration du microservice pour les clients (owners)
+  # Customers Service
   customers-service:
     build: ./spring-petclinic-customers-service
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
     depends_on:
-      - discovery-server
       - config-server
+      - discovery-server
+    networks:
+      - petclinic-network
 
+  # Visits Service
   visits-service:
     build: ./spring-petclinic-visits-service
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
     depends_on:
-      - discovery-server
       - config-server
+      - discovery-server
+    networks:
+      - petclinic-network
 
+  # Vets Service
   vets-service:
     build: ./spring-petclinic-vets-service
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
     depends_on:
-      - discovery-server
       - config-server
+      - discovery-server
+    networks:
+      - petclinic-network
 
+  # Admin Server
   admin-server:
     build: ./spring-petclinic-admin-server
     ports:
       - "9090:9090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka
     depends_on:
       - discovery-server
       - config-server
+    networks:
+      - petclinic-network
+
+networks:
+  petclinic-network:
+    driver: bridge

@@ -2,11 +2,11 @@ spring:
   application:
     name: discovery-server
   config:
-     import: optional:configserver:http://config-server:8888
+    import: optional:configserver:http://config-server:8888
   profiles:
     active: default
-    
-# Avoid some debugging logs at startup
+
+# Réduction des logs inutiles au démarrage
 logging:
   level:
     org:
@@ -14,6 +14,7 @@ logging:
         boot: INFO
         web: INFO
 
+# Profil par défaut pour exécution en local
 ---
 spring:
   config:
@@ -21,3 +22,50 @@ spring:
       on-profile: default
     import: optional:configserver:http://config-server:8888
 
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: "always"
+
+server:
+  port: 8761
+
+# Profil utilisé en mode docker-compose
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: optional:configserver:http://config-server:8888
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    hostname: discovery-server
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: "always"
+
+server:
+  port: 8761

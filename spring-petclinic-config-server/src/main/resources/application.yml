@@ -1,10 +1,18 @@
-server.port: 8888
+# spring-petclinic-config-server/src/main/resources/application.yml
+
+server:
+  port: 8888
+
 spring:
   cloud:
     config:
       server:
         git:
-          uri: https://github.com/mousseta/spring-petclinic-microservices-config.git
+          uri: https://github.com/ArseniiT/spring-petclinic-microservices-config.git
         native:
           searchLocations: file:///${GIT_REPO}
 
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
