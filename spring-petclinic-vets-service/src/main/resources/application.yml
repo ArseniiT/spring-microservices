@@ -9,6 +9,8 @@ spring:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
   cache:
     cache-names: vets
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.tracing.zipkin.ZipkinAutoConfiguration
 
 eureka:
   client:

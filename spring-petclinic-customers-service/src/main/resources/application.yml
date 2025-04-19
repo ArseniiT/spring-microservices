@@ -10,3 +10,6 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
+
+spring.boot.admin.client.url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://admin-server:9090}
+spring.boot.admin.client.instance.prefer-ip: true

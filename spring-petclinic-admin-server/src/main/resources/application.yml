@@ -5,6 +5,10 @@ spring:
     name: admin-server
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://api-gateway:8080}
 
 eureka:
   client:
