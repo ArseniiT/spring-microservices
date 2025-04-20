@@ -10,7 +10,6 @@ metadata:
     alb.ingress.kubernetes.io/backend-protocol: HTTP  # Le protocole utilisé pour communiquer avec le backend
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'  # Active l'écoute sur HTTP et HTTPS
     cert-manager.io/cluster-issuer: letsencrypt-prod  # Demande automatique de certificat TLS via cert-manager
-    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.certificateARN }}  # ARN du certificat ACM à utiliser pour HTTPS
 spec:
   ingressClassName: alb  # Spécifie explicitement la classe d’Ingress utilisée (ALB)
   tls:
