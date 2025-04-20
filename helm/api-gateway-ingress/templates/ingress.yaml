@@ -8,10 +8,17 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing  # ALB accessible publiquement
     alb.ingress.kubernetes.io/target-type: ip  # Le routage se fait vers les pods directement via leurs IP
     alb.ingress.kubernetes.io/backend-protocol: HTTP  # Le protocole utilisé pour communiquer avec le backend
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'  # Écoute sur le port HTTP (pas encore HTTPS ici)
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'  # Active l'écoute sur HTTP et HTTPS
+    cert-manager.io/cluster-issuer: letsencrypt-prod  # Demande automatique de certificat TLS via cert-manager
 spec:
+  ingressClassName: alb  # Spécifie explicitement la classe d’Ingress utilisée (ALB)
+  tls:
+    - hosts:
+        - {{ .Values.domainName }}  # Le nom de domaine pour lequel le certificat TLS sera généré
+      secretName: {{ .Values.domainName | replace "." "-" }}-tls  # Nom du Secret TLS généré automatiquement
   rules:
-    - http:
+    - host: {{ .Values.domainName }}  # Le domaine utilisé dans l'URL d’accès
+      http:
         paths:
           - path: /  # Toutes les requêtes vers "/" seront redirigées
             pathType: Prefix
