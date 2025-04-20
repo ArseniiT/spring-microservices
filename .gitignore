@@ -36,3 +36,6 @@ Thumbs.db
 
 # Spring Boot specific
 spring-petclinic-*/target/
+
+# Helm
+values.secret.yaml

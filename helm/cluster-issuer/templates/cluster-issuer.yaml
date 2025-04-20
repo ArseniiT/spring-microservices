@@ -1,0 +1,25 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # Adresse de l'autorité de certification Let's Encrypt (production)
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Adresse e-mail utilisée pour recevoir les notifications de certificats
+    email: {{ .Values.email }}
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - dns01:
+          route53:
+            # Région AWS de la zone hébergée
+            region: eu-west-3
+            # ID de la zone hébergée Route 53
+            hostedZoneID: {{ .Values.hostedZoneID }}
+            accessKeyIDSecretRef:
+              name: route53-credentials-secret
+              key: access-key-id
+            secretAccessKeySecretRef:
+              name: route53-credentials-secret
+              key: secret-access-key
