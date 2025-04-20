@@ -47,7 +47,7 @@ eksctl create cluster \
   --region $AWS_REGION \
   --nodegroup-name linux-nodes \
   --node-type t3.small \
-  --nodes 2 \
+  --nodes 3 \
   --nodes-min 1 \
   --nodes-max 3 \
   --managed
