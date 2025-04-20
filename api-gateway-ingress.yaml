@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-ingress
+  namespace: default  # Le namespace où se trouve le service api-gateway
+  annotations:
+    kubernetes.io/ingress.class: alb  # Utilise le contrôleur AWS ALB
+    alb.ingress.kubernetes.io/scheme: internet-facing  # ALB accessible publiquement
+    alb.ingress.kubernetes.io/target-type: ip  # Le routage se fait vers les pods directement via leurs IP
+    alb.ingress.kubernetes.io/backend-protocol: HTTP  # Le protocole utilisé pour communiquer avec le backend
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'  # Écoute sur le port HTTP (pas encore HTTPS ici)
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /  # Toutes les requêtes vers "/" seront redirigées
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway  # Nom du service Kubernetes cible
+                port:
+                  number: 8080  # Port exposé par le service api-gateway
