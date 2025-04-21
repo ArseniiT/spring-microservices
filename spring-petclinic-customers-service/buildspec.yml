@@ -21,7 +21,3 @@ phases:
     commands:
       - echo "Push de l’image dans ECR..."
       - docker push $ECR_URI:latest
-
-artifacts:
-  files:
-    - target/*.jar
