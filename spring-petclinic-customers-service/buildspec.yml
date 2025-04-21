@@ -7,11 +7,13 @@ phases:
       # Login sécurisé avec variable d’environnement
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
       - echo "Compilation Maven..."
+      - cd spring-petclinic-customers-service  # Se déplacer dans le dossier du microservice
       - mvn clean install
 
   build:
     commands:
       - echo "Construction de l’image Docker..."
+      - cd spring-petclinic-customers-service  # Se déplacer dans le dossier du microservice
       - docker build -t customers-service .
       # Tag basé sur variable d'environnement
       - docker tag customers-service:latest $ECR_URI:latest
