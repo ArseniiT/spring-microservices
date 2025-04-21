@@ -1,0 +1,26 @@
+version: 0.2 # Version du format buildspec d’AWS CodeBuild
+
+phases:
+  pre_build:
+    commands:
+      - echo "Connexion à Amazon ECR..."
+      # Login sécurisé avec variable d’environnement
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
+      - echo "Compilation Maven..."
+      - mvn clean install
+
+  build:
+    commands:
+      - echo "Construction de l’image Docker..."
+      - docker build -t customers-service .
+      # Tag basé sur variable d'environnement
+      - docker tag customers-service:latest $ECR_URI:latest
+
+  post_build:
+    commands:
+      - echo "Push de l’image dans ECR..."
+      - docker push $ECR_URI:latest
+
+artifacts:
+  files:
+    - target/*.jar
