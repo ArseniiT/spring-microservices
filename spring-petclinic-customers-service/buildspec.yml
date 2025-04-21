@@ -13,7 +13,6 @@ phases:
   build:
     commands:
       - echo "Construction de l’image Docker..."
-      - cd spring-petclinic-customers-service  # Se déplacer dans le dossier du microservice
       - docker build -t customers-service .
       # Tag basé sur variable d'environnement
       - docker tag customers-service:latest $ECR_URI:latest
