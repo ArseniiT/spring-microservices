@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.domainName | replace "." "-" }}-cert  # Le nom de la ressource certificat
+  namespace: default  # Le namespace où sera stocké le certificat TLS
+spec:
+  secretName: {{ .Values.domainName | replace "." "-" }}-tls  # Nom du Secret TLS qui sera créé automatiquement
+  duration: 2160h # 90 jours
+  renewBefore: 360h # Renouvellement 15 jours avant expiration
+  issuerRef:
+    name: letsencrypt-prod  # Fait référence au ClusterIssuer qu’on a déjà installé
+    kind: ClusterIssuer
+  commonName: {{ .Values.domainName }}  # Domaine principal du certificat
+  dnsNames:
+    - {{ .Values.domainName }}  # Nom de domaine associé au certificat

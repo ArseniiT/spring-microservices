@@ -1,0 +1,6 @@
+apiVersion: v2
+name: certificate
+description: Génère automatiquement un certificat TLS Let's Encrypt avec cert-manager pour un domaine Route53
+type: application
+version: 0.1.0
+appVersion: "1.0"
