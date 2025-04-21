@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "customers-service.fullname" . }}  # Nom du déploiement basé sur release + chart
+spec:
+  replicas: {{ .Values.replicaCount }}               # Nombre de pods souhaités
+  selector:
+    matchLabels:
+      app: {{ include "customers-service.name" . }}   # Utilisé pour associer les pods à ce déploiement
+  template:
+    metadata:
+      labels:
+        app: {{ include "customers-service.name" . }} # Label utilisé pour le service
+    spec:
+      imagePullSecrets:
+        - name: {{ include "customers-service.fullname" . }}-ecr-auth  # Secret d'authentification ECR
+      containers:
+        - name: customers-service
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
+          ports:
+            - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.spring.profiles.active | quote }}         # Profil Spring actif (ex: docker)
