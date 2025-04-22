@@ -1,4 +1,4 @@
-version: 0.2 # Version du format buildspec d’AWS CodeBuild v1.0 trigger
+version: 0.2 # Version du format buildspec d’AWS CodeBuild v1.1 trigger
 
 phases:
   pre_build:
