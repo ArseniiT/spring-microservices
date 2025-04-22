@@ -1,0 +1,6 @@
+apiVersion: v2                       # Version de l'API Helm (v2 pour Helm 3+)
+name: vets-service              # Nom du chart (doit correspondre au dossier)
+description: A Helm chart for Kubernetes
+type: application                    # Type de chart : application ou library
+version: 0.1.0                       # Version du chart Helm lui-même
+appVersion: "1.0"                    # Version de l'application déployée (affichée dans ArgoCD)
