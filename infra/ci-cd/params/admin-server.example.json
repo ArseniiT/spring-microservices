@@ -1,0 +1,8 @@
+[
+    { "ParameterKey": "ServiceName", "ParameterValue": "admin-server" },
+    { "ParameterKey": "GitHubRepo", "ParameterValue": "" },
+    { "ParameterKey": "GitHubBranch", "ParameterValue": "main" },
+    { "ParameterKey": "GitHubConnectionArn", "ParameterValue": "arn:aws:codeconnections:REGION:ACCOUNT_ID:connection/CONNECTION_ID" },
+    { "ParameterKey": "ECRRepoUri", "ParameterValue": "ACCOUNT_ID.dkr.ecr.eu-west-3.amazonaws.com/admin-server" },
+    { "ParameterKey": "HelmChartPath", "ParameterValue": "helm/admin-server" }
+]

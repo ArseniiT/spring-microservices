@@ -39,3 +39,6 @@ spring-petclinic-*/target/
 
 # Helm
 values.secret.yaml
+
+# CloudFormation variables
+admin-server.json
