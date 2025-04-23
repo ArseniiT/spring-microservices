@@ -39,6 +39,7 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
