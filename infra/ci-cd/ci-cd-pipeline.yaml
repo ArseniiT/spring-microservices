@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Pipeline CI/CD pour un microservice Spring Petclinic avec CodePipeline et CodeBuild v1.1
+Description: Pipeline CI/CD pour un microservice Spring Petclinic avec CodePipeline et CodeBuild v1.11
 
 Parameters:
   ServiceName:
