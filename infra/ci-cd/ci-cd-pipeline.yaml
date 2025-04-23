@@ -96,8 +96,6 @@ Resources:
                 Version: 1
               InputArtifacts:
                 - Name: SourceOutput
-              OutputArtifacts:
-                - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
