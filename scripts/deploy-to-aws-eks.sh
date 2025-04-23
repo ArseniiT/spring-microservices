@@ -3,9 +3,10 @@
 # === Configuration ===
 AWS_REGION="eu-west-3"
 CLUSTER_NAME="petclinic-cluster"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICES=("admin-server" "api-gateway" "config-server" "discovery-server" "customers-service" "vets-service" "visits-service")
 ECR_REPO_PREFIX="spring-petclinic"
-LOCAL_PROJECT_PATH="$HOME/stage/projetpetclinicinitial"
+LOCAL_PROJECT_PATH="$ROOT_DIR"
 
 # Récupérer automatiquement l'identifiant du compte AWS
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
