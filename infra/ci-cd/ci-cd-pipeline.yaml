@@ -17,6 +17,11 @@ Parameters:
     Type: String
 
 Resources:
+  ArtifactStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ServiceName}-pipeline-artifacts
+
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -26,7 +31,9 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: codebuild.amazonaws.com
+              Service:
+                - codebuild.amazonaws.com
+                - codepipeline.amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
@@ -60,7 +67,7 @@ Resources:
       RoleArn: !GetAtt CodeBuildRole.Arn
       ArtifactStore:
         Type: S3
-        Location: !Sub ${ServiceName}-pipeline-artifacts
+        Location: !Ref ArtifactStoreBucket
       Stages:
         - Name: Source
           Actions:
