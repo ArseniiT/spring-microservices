@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Authentification à ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+      - echo "Compilation Maven..."
+      - mvn clean package
+
+  build:
+    commands:
+      - echo "Construction de l’image Docker..."
+      - docker build -t $SERVICE_NAME .
+
+  post_build:
+    commands:
+      - echo "Tag et push de l’image Docker dans ECR..."
+      - docker tag $SERVICE_NAME:latest $ECR_REPO_URI:latest
+      - docker push $ECR_REPO_URI:latest
