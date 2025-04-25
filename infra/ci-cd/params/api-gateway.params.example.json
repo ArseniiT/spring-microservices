@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "ServiceName": "api-gateway",
+    "ECRRepoUri": "${AWSAccountId}.dkr.ecr.${AWSRegion}.amazonaws.com/spring-petclinic/api-gateway",
+    "HelmChartPath": "helm/api-gateway"
+  }
+}

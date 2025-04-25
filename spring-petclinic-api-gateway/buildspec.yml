@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "authentification à ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+      - echo "compilation Maven..."
+      - cd spring-petclinic-api-gateway
+      - mvn clean package
+
+  build:
+    commands:
+      - echo "construction de l’image Docker..."
+      - docker build -t $SERVICE_NAME .
+
+  post_build:
+    commands:
+      - echo "tag et push de l’image Docker dans ECR..."
+      - docker tag $SERVICE_NAME:latest $ECR_REPO_URI:latest
+      - docker push $ECR_REPO_URI:latest

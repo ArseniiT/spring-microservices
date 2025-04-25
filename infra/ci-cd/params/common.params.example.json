@@ -1,0 +1,10 @@
+{
+    "Parameters": {
+      "GitHubRepo": "ArseniiT/spring-microservices",
+      "GitHubBranch": "main",
+      "GitHubConnectionArn": "arn:aws:codestar-connections:REGION:ACCOUNT_ID:connection/CONNECTION_ID",
+      "AWSAccountId": "ACCOUNT_ID",
+      "AWSRegion": "eu-west-3"
+    }
+}
+  

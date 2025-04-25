@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "ServiceName": "customers-service",
+    "ECRRepoUri": "${AWSAccountId}.dkr.ecr.${AWSRegion}.amazonaws.com/spring-petclinic/customers-service",
+    "HelmChartPath": "helm/customers-service"
+  }
+}

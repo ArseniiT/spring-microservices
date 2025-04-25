@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "ServiceName": "discovery-server",
+    "ECRRepoUri": "${AWSAccountId}.dkr.ecr.${AWSRegion}.amazonaws.com/spring-petclinic/discovery-server",
+    "HelmChartPath": "helm/discovery-server"
+  }
+}

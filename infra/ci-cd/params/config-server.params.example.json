@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "ServiceName": "config-server",
+    "ECRRepoUri": "${AWSAccountId}.dkr.ecr.${AWSRegion}.amazonaws.com/spring-petclinic/config-server",
+    "HelmChartPath": "helm/config-server"
+  }
+}
