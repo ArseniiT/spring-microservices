@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Pipeline CI/CD pour un microservice Spring Petclinic avec CodePipeline et CodeBuild v1.22
+Description: Pipeline CI/CD pour un microservice Spring Petclinic avec CodePipeline et CodeBuild v1.23
 
 Parameters:
   ServiceName:
@@ -58,6 +58,7 @@ Resources:
       Name: !Sub ${ServiceName}-build
       Source:
         Type: CODEPIPELINE
+        BuildSpec: spring-petclinic-admin-server/buildspec.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -95,9 +96,8 @@ Resources:
                 ConnectionArn: !Ref GitHubConnectionArn
                 FullRepositoryId: !Ref GitHubRepo
                 BranchName: !Ref GitHubBranch
-                DetectChanges: true
+                DetectChanges: false
               RunOrder: 1
-
         - Name: Build
           Actions:
             - Name: BuildAction
@@ -111,3 +111,12 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
+      Triggers:
+        - ProviderType: CodeStarSourceConnection
+          GitConfiguration:
+            SourceActionName: SourceAction
+            Push:
+              - Branches:
+                  Includes: ["main"]
+                FilePaths:
+                  Includes: ["spring-petclinic-admin-server/**"]
