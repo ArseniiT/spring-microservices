@@ -15,7 +15,7 @@ Parameters:
     Type: String
   HelmChartPath:
     Type: String
-    DockerHubSecretArn:
+  DockerHubSecretArn:
     Type: String
 
 Resources:
