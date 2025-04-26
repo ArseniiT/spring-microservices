@@ -58,7 +58,7 @@ Resources:
       Name: !Sub ${ServiceName}-build
       Source:
         Type: CODEPIPELINE
-        BuildSpec: spring-petclinic-${ServiceName}/buildspec.yml
+        BuildSpec: !Sub spring-petclinic-${ServiceName}/buildspec.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
