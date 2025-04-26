@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# ce script fusionne automatiquement les paramètres communs et spécifiques au service, puis déploie le stack CloudFormation
+# ce script fusionne automatiquement les paramètres communs et spécifiques au service,
+# remplace les variables (AWSAccountId, AWSRegion) et déploie le stack CloudFormation
 
 # ./deploy-cicd-with-merge.sh admin-server
 # ./deploy-cicd-with-merge.sh api-gateway
@@ -41,8 +42,22 @@ if [ ! -f "$SERVICE_PARAMS" ]; then
   exit 1
 fi
 
-# fusionner avec jq
-jq -s '.[0].Parameters * .[1].Parameters | to_entries | map({ParameterKey: .key, ParameterValue: .value})' "$COMMON_PARAMS" "$SERVICE_PARAMS" > "$MERGED_PARAMS"
+# extraire les valeurs AWSAccountId et AWSRegion
+ AWS_ACCOUNT_ID=$(jq -r '.Parameters.AWSAccountId' "$COMMON_PARAMS")
+ AWS_REGION=$(jq -r '.Parameters.AWSRegion' "$COMMON_PARAMS")
+ 
+ # fusionner les paramètres + remplacer les placeholders
+ jq -s '
+   .[0].Parameters * .[1].Parameters
+   | to_entries
+   | map({
+       ParameterKey: .key,
+       ParameterValue: (.value
+         | tostring
+         | gsub("\\$\\{AWSAccountId\\}"; "'"$AWS_ACCOUNT_ID"'")
+         | gsub("\\$\\{AWSRegion\\}"; "'"$AWS_REGION"'"))
+     })
+ ' "$COMMON_PARAMS" "$SERVICE_PARAMS" > "$MERGED_PARAMS"
 
 # déployer
 aws cloudformation deploy \
