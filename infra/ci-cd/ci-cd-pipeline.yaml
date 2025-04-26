@@ -58,7 +58,7 @@ Resources:
       Name: !Sub ${ServiceName}-build
       Source:
         Type: CODEPIPELINE
-        BuildSpec: spring-petclinic-admin-server/buildspec.yml
+        BuildSpec: spring-petclinic-${ServiceName}/buildspec.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -69,6 +69,8 @@ Resources:
             Value: !Ref ServiceName
           - Name: ECR_REPO_URI
             Value: !Ref ECRRepoUri
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
@@ -119,4 +121,4 @@ Resources:
               - Branches:
                   Includes: ["main"]
                 FilePaths:
-                  Includes: ["spring-petclinic-admin-server/**"]
+                  Includes: ["spring-petclinic-${ServiceName}/**"]
