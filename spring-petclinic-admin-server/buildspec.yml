@@ -1,6 +1,9 @@
 version: 0.2
 
 phases:
+  install:
+    commands:
+      - echo "installation des dépendances"
   pre_build:
     commands:
       - echo "authentification à ECR..."
@@ -12,7 +15,7 @@ phases:
       - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
       - echo "compilation du projet Maven..."
       - cd spring-petclinic-$SERVICE_NAME
-      - mvn clean package
+      - mvn clean install
 
   build:
     commands:
