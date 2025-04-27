@@ -15,7 +15,7 @@ phases:
       - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
       - echo "compilation du projet Maven..."
       - cd spring-petclinic-$SERVICE_NAME
-      - mvn clean install
+      - mvn clean package
 
   build:
     commands:

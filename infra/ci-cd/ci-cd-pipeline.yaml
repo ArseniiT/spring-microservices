@@ -68,7 +68,7 @@ Resources:
       Name: !Sub ${ServiceName}-tests
       Source:
         Type: CODEPIPELINE
-        BuildSpec: !Sub spring-petclinic-${ServiceName}/buildspec.yml
+        BuildSpec: !Sub spring-petclinic-${ServiceName}/buildspec-test.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -133,7 +133,7 @@ Resources:
               RunOrder: 1
         - Name: Tests
           Actions:
-            - Name: TestAction
+            - Name: TestsAction
               ActionTypeId:
                 Category: Build
                 Owner: AWS
