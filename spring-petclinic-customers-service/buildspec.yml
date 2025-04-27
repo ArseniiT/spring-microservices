@@ -3,21 +3,24 @@ version: 0.2 # Version du format buildspec d’AWS CodeBuild v1.1 trigger
 phases:
   pre_build:
     commands:
-      - echo "Connexion à Amazon ECR..."
-      # Login sécurisé avec variable d’environnement
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
-      - echo "Compilation Maven..."
-      - cd spring-petclinic-customers-service  # Se déplacer dans le dossier du microservice
-      - mvn clean install
+      - echo "authentification à ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+      - echo "authentification à DockerHub via Secrets Manager..."
+      - export DOCKERHUB_SECRET=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
+      - export DOCKERHUB_USERNAME=$(echo $DOCKERHUB_SECRET | jq -r '.username')
+      - export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_SECRET | jq -r '.password')
+      - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+      - echo "compilation Maven..."
+      - cd spring-petclinic-$SERVICE_NAME
+      - mvn clean package
 
   build:
     commands:
-      - echo "Construction de l’image Docker..."
-      - docker build -t customers-service .
-      # Tag basé sur variable d'environnement
-      - docker tag customers-service:latest $ECR_URI:latest
+      - echo "construction de l’image Docker..."
+      - docker build -t $SERVICE_NAME .
 
   post_build:
     commands:
-      - echo "Push de l’image dans ECR..."
-      - docker push $ECR_URI:latest
+      - echo "tag et push de l’image Docker dans ECR..."
+      - docker tag $SERVICE_NAME:latest $ECR_REPO_URI:latest
+      - docker push $ECR_REPO_URI:latest
