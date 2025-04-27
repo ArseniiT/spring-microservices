@@ -13,12 +13,16 @@ phases:
       - export DOCKERHUB_USERNAME=$(echo $DOCKERHUB_SECRET | jq -r '.username')
       - export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_SECRET | jq -r '.password')
       - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+      - echo "authentification à SonarQube via Secrets Manager..."
+      - export SONARQUBE_TOKEN=$(echo $DOCKERHUB_SECRET | jq -r '.sonarqube_token')
       - echo "compilation du projet Maven..."
       - cd spring-petclinic-$SERVICE_NAME
       - mvn clean package
 
   build:
     commands:
+      - echo "analyse du code avec SonarQube..."
+      - mvn sonar:sonar -Dsonar.projectKey=spring-petclinic-$SERVICE_NAME -Dsonar.organization=arseniit -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=$SONARQUBE_TOKEN
       - echo "construction de l’image Docker..."
       - docker build -t $SERVICE_NAME .
 
