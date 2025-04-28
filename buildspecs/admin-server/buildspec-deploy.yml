@@ -16,14 +16,13 @@ phases:
     commands:
       - echo Checking helm version...
       - helm version
-      - echo Generating token for EKS authentication...
-      - aws eks get-token --region $AWS_REGION --cluster-name petclinic-cluster > /tmp/token.json
-      - export KUBERNETES_EXEC_INFO=$(cat /tmp/token.json)
 
   build:
     commands:
-      - echo Deploying ${SERVICE_NAME} to EKS with Helm...
-      - helm upgrade --install ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest
+      - echo Rendering helm templates...
+      - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest > output.yaml
+      - echo Applying manifests to EKS...
+      - kubectl apply -f output.yaml
 
 artifacts:
   files:
