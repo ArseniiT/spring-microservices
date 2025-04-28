@@ -15,7 +15,7 @@ phases:
       - export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_SECRET | jq -r '.password')
       - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
       - echo "compilation du projet Maven..."
-      - cd spring-petclinic-$SERVICE_NAME
+      - cd spring-petclinic-${SERVICE_NAME}
       - mvn clean package
 
   build:

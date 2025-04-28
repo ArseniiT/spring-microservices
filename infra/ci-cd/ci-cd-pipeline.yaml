@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Pipeline CI/CD pour un microservice Spring Petclinic avec CodePipeline et CodeBuild v1.25
+Description: Pipeline CI/CD pour un microservice Spring Petclinic avec CodePipeline et CodeBuild v2.0 (avec déploiement EKS)
 
 Parameters:
   ServiceName:
@@ -29,7 +29,7 @@ Resources:
     Properties:
       RoleName: !Sub ${ServiceName}-codebuild-role
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -46,7 +46,7 @@ Resources:
       Policies:
         - PolicyName: CodeStarConnectionsAccess
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -55,7 +55,7 @@ Resources:
                 Resource: !Ref GitHubConnectionArn
         - PolicyName: AllowSecretsManagerAccess
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -68,7 +68,7 @@ Resources:
       Name: !Sub ${ServiceName}-tests
       Source:
         Type: CODEPIPELINE
-        BuildSpec: !Sub spring-petclinic-${ServiceName}/buildspec-test.yml
+        BuildSpec: !Sub buildspecs/${ServiceName}/buildspec-test.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -89,7 +89,7 @@ Resources:
       Name: !Sub ${ServiceName}-sonar
       Source:
         Type: CODEPIPELINE
-        BuildSpec: !Sub spring-petclinic-${ServiceName}/buildspec-sonar.yml
+        BuildSpec: !Sub buildspecs/${ServiceName}/buildspec-sonar.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -110,7 +110,7 @@ Resources:
       Name: !Sub ${ServiceName}-build
       Source:
         Type: CODEPIPELINE
-        BuildSpec: !Sub spring-petclinic-${ServiceName}/buildspec.yml
+        BuildSpec: !Sub buildspecs/${ServiceName}/buildspec.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -123,6 +123,29 @@ Resources:
             Value: !Ref ECRRepoUri
           - Name: AWS_REGION
             Value: !Ref AWS::Region
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+
+  CodeBuildDeployProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ServiceName}-deploy
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub buildspecs/${ServiceName}/buildspec-deploy.yml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:6.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+          - Name: SERVICE_NAME
+            Value: !Ref ServiceName
+          - Name: HELM_CHART_PATH
+            Value: !Ref HelmChartPath
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
@@ -195,12 +218,26 @@ Resources:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
 
+        - Name: Deploy
+          Actions:
+            - Name: HelmDeploy
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildDeployProject
+              RunOrder: 1
+
       Triggers:
         - ProviderType: CodeStarSourceConnection
           GitConfiguration:
             SourceActionName: SourceAction
             Push:
               - Branches:
-                  Includes: ["main"]
+                  Includes: ['main']
                 FilePaths:
-                  Includes: ["spring-petclinic-${ServiceName}/**"]
+                  Includes: ['buildspecs/${ServiceName}/**', '${HelmChartPath}/**']
