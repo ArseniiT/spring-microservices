@@ -87,6 +87,8 @@ Resources:
         - system:masters
       AccessPolicies:
         - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+          AccessScope:
+            Type: cluster
 
   CodeBuildTestProject:
     Type: AWS::CodeBuild::Project
