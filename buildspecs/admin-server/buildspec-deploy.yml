@@ -3,25 +3,30 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo Installing kubectl and helm...
-      - curl -o kubectl https://amazon-eks.s3.eu-west-3.amazonaws.com/1.27.2/2023-10-05/bin/linux/amd64/kubectl
+      - echo installation de kubectl et helm...
+      # détecter l'architecture et télécharger le bon binaire de kubectl
+      - ARCH=$(uname -m)
+      - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
+      - curl -o kubectl https://amazon-eks.s3.eu-west-3.amazonaws.com/1.27.2/2023-10-05/bin/linux/${PLATFORM}/kubectl
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/
+      # installer helm
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      - echo Updating kubeconfig for EKS cluster...
+      # configurer kubeconfig pour eks
+      - echo mise à jour du kubeconfig pour le cluster eks...
       - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
       - export KUBECONFIG=/root/.kube/config
 
   pre_build:
     commands:
-      - echo Checking helm version...
+      - echo vérification de la version de helm...
       - helm version
 
   build:
     commands:
-      - echo Rendering helm templates...
+      - echo génération des templates helm...
       - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest --set imagePullSecret.dockerconfigjson="" > output.yaml
-      - echo Applying manifests to EKS...
+      - echo application des manifests sur eks...
       - kubectl apply -f output.yaml
 
 artifacts:
