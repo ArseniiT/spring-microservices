@@ -13,13 +13,16 @@ phases:
       - echo "mise à jour du kubeconfig pour le cluster eks..."
       - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
       - export KUBECONFIG=/root/.kube/config
+      - echo "génération du token pour le cluster eks..."
+      - export KUBERNETES_EXEC_INFO="$(aws eks get-token --region $AWS_REGION --cluster-name petclinic-cluster | jq -c '.')"
 
   pre_build:
     commands:
       - echo "vérification de la version de helm..."
       - helm version
-      - echo "vérification доступа к кластеру..."
+      - echo "vérification d'accès au cluster..."
       - kubectl get nodes
+
 
   build:
     commands:
