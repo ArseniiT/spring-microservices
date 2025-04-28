@@ -27,11 +27,12 @@ phases:
     commands:
       - echo génération des templates helm...
       - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest --set imagePullSecret.dockerconfigjson="" > output.yaml
-      - echo génération du token pour l'authentification eks...
+      - echo "génération du token pour l'authentification eks..."
       - aws eks get-token --region $AWS_REGION --cluster-name petclinic-cluster > /tmp/token.json
       - export KUBERNETES_EXEC_INFO=$(cat /tmp/token.json)
       - echo application des manifests sur eks...
       - kubectl apply -f output.yaml
+
 
 artifacts:
   files:
