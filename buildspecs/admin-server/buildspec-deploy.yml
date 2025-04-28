@@ -20,8 +20,10 @@ phases:
     commands:
       - echo "vérification de la version de helm..."
       - helm version
+      - echo "génération du token pour accéder au cluster..."
+      - TOKEN=$(aws eks get-token --region $AWS_REGION --cluster-name petclinic-cluster --query 'status.token' --output text)
       - echo "vérification d'accès au cluster..."
-      - kubectl get nodes
+      - kubectl get nodes --token "$TOKEN"
 
 
   build:
@@ -29,7 +31,7 @@ phases:
       - echo "génération des templates helm..."
       - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest --set imagePullSecret.dockerconfigjson="" > output.yaml
       - echo "application des manifests sur eks..."
-      - kubectl apply -f output.yaml
+      - kubectl apply -f output.yaml --token "$TOKEN"
 
 artifacts:
   files:
