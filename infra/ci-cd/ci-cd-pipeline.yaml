@@ -89,12 +89,10 @@ Resources:
     Properties:
       ClusterName: !Ref EKSClusterName
       PrincipalArn: !GetAtt CodeBuildRole.Arn
-      AccessPolicies:
-        - AccessScope:
-            Type: namespace
-            Namespaces:
-              - default
-          Policy: cluster-admin
+      KubernetesGroups:
+        - system:masters
+      Type: STANDARD
+      UserName: codebuild
 
   CodeBuildTestProject:
     Type: AWS::CodeBuild::Project

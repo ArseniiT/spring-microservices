@@ -5,7 +5,8 @@
       "GitHubConnectionArn": "arn:aws:codestar-connections:REGION:ACCOUNT_ID:connection/CONNECTION_ID",
       "AWSAccountId": "ACCOUNT_ID",
       "AWSRegion": "eu-west-3",
-      "DockerHubSecretArn": "arn:aws:secretsmanager:eu-west-3:ACCOUNT_ID:secret/SECRET_NAME"
+      "DockerHubSecretArn": "arn:aws:secretsmanager:eu-west-3:ACCOUNT_ID:secret/SECRET_NAME",
+      "EKSClusterName": ""
     }
 }
   
