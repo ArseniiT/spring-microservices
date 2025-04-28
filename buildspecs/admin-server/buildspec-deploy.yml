@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo installation de kubectl et helm...
+      - echo "installation de kubectl et helm..."
       # détecter l'architecture pour choisir le bon binaire
       - ARCH=$(uname -m)
       - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
@@ -14,23 +14,23 @@ phases:
       # installer helm
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       # configurer le kubeconfig pour eks
-      - echo mise à jour du kubeconfig pour le cluster eks...
+      - echo "mise à jour du kubeconfig pour le cluster eks..."
       - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
       - export KUBECONFIG=/root/.kube/config
 
   pre_build:
     commands:
-      - echo vérification de la version de helm...
+      - echo "vérification de la version de helm..."
       - helm version
 
   build:
     commands:
-      - echo génération des templates helm...
+      - echo "génération des templates helm..."
       - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest --set imagePullSecret.dockerconfigjson="" > output.yaml
-      - echo génération du token pour l'authentification eks...
+      - echo "génération du token pour l'authentification eks..."
       - export EKS_TOKEN=$(aws eks get-token --region $AWS_REGION --cluster-name petclinic-cluster --output json | jq -r '.status.token')
       - export KUBERNETES_EXEC_INFO="{\"kind\":\"ExecCredential\",\"apiVersion\":\"client.authentication.k8s.io/v1beta1\",\"status\":{\"token\":\"$EKS_TOKEN\"}}"
-      - echo application des manifests sur eks...
+      - echo "application des manifests sur eks..."
       - kubectl apply -f output.yaml
 
 artifacts:
