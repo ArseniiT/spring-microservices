@@ -12,7 +12,7 @@ phases:
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       - echo "mise à jour du kubeconfig pour le cluster eks..."
       - aws sts get-caller-identity
-      - echo "Rôle utilisé par CodeBuild: $ROLE_ARN"
+      - echo "Current ROLE_ARN is [$ROLE_ARN]"
       - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster --role-arn $ROLE_ARN
       - export KUBECONFIG=/root/.kube/config
 
