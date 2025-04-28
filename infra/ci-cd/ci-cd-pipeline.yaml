@@ -83,8 +83,6 @@ Resources:
       ClusterName: petclinic-cluster
       PrincipalArn: !GetAtt CodeBuildRole.Arn
       Type: STANDARD
-      KubernetesGroups:
-        - system:masters
       AccessPolicies:
         - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
           AccessScope:
