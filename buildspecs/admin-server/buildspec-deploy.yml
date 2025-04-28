@@ -4,15 +4,16 @@ phases:
   install:
     commands:
       - echo installation de kubectl et helm...
-      # détecter l'architecture et télécharger le bon binaire de kubectl
+      # détecter l'architecture pour choisir le bon binaire
       - ARCH=$(uname -m)
       - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
-      - curl -o kubectl https://amazon-eks.s3.eu-west-3.amazonaws.com/1.27.2/2023-10-05/bin/linux/${PLATFORM}/kubectl
+      # télécharger le bon kubectl depuis le dépôt officiel amazon-eks
+      - curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.2/2023-10-05/bin/linux/${PLATFORM}/kubectl
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/
       # installer helm
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      # configurer kubeconfig pour eks
+      # configurer le kubeconfig pour eks
       - echo mise à jour du kubeconfig pour le cluster eks...
       - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
       - export KUBECONFIG=/root/.kube/config
