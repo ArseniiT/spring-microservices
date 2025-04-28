@@ -10,6 +10,7 @@ phases:
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       - echo Updating kubeconfig for EKS cluster...
       - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
+      - export KUBECONFIG=/root/.kube/config
 
   pre_build:
     commands:
