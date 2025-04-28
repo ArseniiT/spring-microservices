@@ -20,7 +20,7 @@ phases:
   build:
     commands:
       - echo Rendering helm templates...
-      - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest > output.yaml
+      - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest --set imagePullSecret.dockerconfigjson="" > output.yaml
       - echo Applying manifests to EKS...
       - kubectl apply -f output.yaml
 
