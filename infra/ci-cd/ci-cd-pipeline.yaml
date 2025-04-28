@@ -61,6 +61,15 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: !Ref DockerHubSecretArn
+        - PolicyName: AllowEKSDescribeCluster
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - eks:DescribeCluster
+                Resource: "*"
+
 
   CodeBuildTestProject:
     Type: AWS::CodeBuild::Project
