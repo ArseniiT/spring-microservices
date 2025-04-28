@@ -10,7 +10,7 @@ phases:
       - echo "préparation du projet pour l’analyse SonarQube..."
       - export DOCKERHUB_SECRET=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
       - export SONARQUBE_TOKEN=$(echo $DOCKERHUB_SECRET | jq -r '.sonarqube_token')
-      - cd ../../spring-petclinic-${SERVICE_NAME}
+      - cd spring-petclinic-${SERVICE_NAME}
 
   build:
     commands:
