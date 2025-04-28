@@ -17,10 +17,6 @@ Parameters:
     Type: String
   DockerHubSecretArn:
     Type: String
-  EKSClusterName:
-    Type: String
-    Default: petclinic-cluster
-    Description: Name of the EKS cluster to grant access to
 
 Resources:
   ArtifactStoreBucket:
@@ -84,15 +80,6 @@ Resources:
                   - sts:AssumeRole
                 Resource: "*"
 
-  EKSAccessEntry:
-    Type: AWS::EKS::AccessEntry
-    Properties:
-      ClusterName: !Ref EKSClusterName
-      PrincipalArn: !GetAtt CodeBuildRole.Arn
-      KubernetesGroups:
-        - system:masters
-      Type: STANDARD
-      UserName: codebuild
 
   CodeBuildTestProject:
     Type: AWS::CodeBuild::Project
