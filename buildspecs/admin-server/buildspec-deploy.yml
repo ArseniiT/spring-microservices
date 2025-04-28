@@ -18,8 +18,8 @@ phases:
 
   build:
     commands:
-      - echo Deploying $SERVICE_NAME to EKS with Helm...
-      - helm upgrade --install $SERVICE_NAME $HELM_CHART_PATH --namespace default --set image.tag=latest
+      - echo Deploying ${SERVICE_NAME} to EKS with Helm...
+      - helm upgrade --install ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest
 
 artifacts:
   files:
