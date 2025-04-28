@@ -61,25 +61,32 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: !Ref DockerHubSecretArn
-        - PolicyName: AllowEKSDescribeCluster
+        - PolicyName: AllowEKSAccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
                   - eks:DescribeCluster
+                  - eks:ListClusters
+                  - eks:AccessKubernetesApi
                 Resource: "*"
-        - PolicyName: AllowAccessToEKSAPI
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
               - Effect: Allow
                 Action:
-                  - eks:AccessKubernetesApi
-                  - sts:GetCallerIdentity
                   - sts:AssumeRole
+                  - sts:GetCallerIdentity
                 Resource: "*"
 
+  CodeBuildClusterAccess:
+    Type: AWS::EKS::AccessEntry
+    Properties: 
+      ClusterName: petclinic-cluster
+      PrincipalArn: !GetAtt CodeBuildRole.Arn
+      Type: STANDARD
+      KubernetesGroups:
+        - system:masters
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
 
   CodeBuildTestProject:
     Type: AWS::CodeBuild::Project
@@ -165,6 +172,8 @@ Resources:
             Value: !Ref ServiceName
           - Name: HELM_CHART_PATH
             Value: !Ref HelmChartPath
+          - Name: ROLE_ARN
+            Value: !GetAtt CodeBuildRole.Arn
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
