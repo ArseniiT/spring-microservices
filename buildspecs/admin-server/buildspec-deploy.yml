@@ -11,9 +11,7 @@ phases:
       - mv ./kubectl /usr/local/bin/
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       - echo "mise à jour du kubeconfig pour le cluster eks..."
-      - aws sts get-caller-identity
-      - echo "Current ROLE_ARN is [$ROLE_ARN]"
-      - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster --role-arn $ROLE_ARN
+      - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
       - export KUBECONFIG=/root/.kube/config
 
   pre_build:
@@ -22,7 +20,6 @@ phases:
       - helm version
       - echo "vérification d'accès au cluster..."
       - kubectl get nodes
-      - echo "Si l'accès est refusé, vérifiez que AWS::EKS::AccessEntry est correctement configuré"
 
   build:
     commands:
