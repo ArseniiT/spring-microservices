@@ -8,7 +8,7 @@ phases:
   pre_build:
     commands:
       - echo "compilation et préparation du projet Maven..."
-      - cd ../../spring-petclinic-${SERVICE_NAME}
+      - cd spring-petclinic-${SERVICE_NAME}
 
   build:
     commands:
