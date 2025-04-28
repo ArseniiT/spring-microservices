@@ -7,8 +7,8 @@ phases:
       # détecter l'architecture pour choisir le bon binaire
       - ARCH=$(uname -m)
       - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
-      # télécharger le bon kubectl depuis le dépôt officiel amazon-eks
-      - curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.2/2023-10-05/bin/linux/${PLATFORM}/kubectl
+      # télécharger kubectl depuis le dépôt officiel de kubernetes
+      - curl -LO "https://dl.k8s.io/release/v1.27.2/bin/linux/${PLATFORM}/kubectl"
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/
       # installer helm
