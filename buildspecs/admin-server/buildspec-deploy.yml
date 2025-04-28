@@ -16,6 +16,9 @@ phases:
     commands:
       - echo Checking helm version...
       - helm version
+      - echo Generating token for EKS authentication...
+      - aws eks get-token --region $AWS_REGION --cluster-name petclinic-cluster > /tmp/token.json
+      - export KUBERNETES_EXEC_INFO=$(cat /tmp/token.json)
 
   build:
     commands:
