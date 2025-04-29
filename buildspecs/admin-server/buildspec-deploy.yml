@@ -24,7 +24,7 @@ phases:
   build:
     commands:
       - echo "génération des templates helm..."
-      - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest > output.yaml
+      - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --values ${HELM_CHART_PATH}/values.secret.yaml --set image.tag=latest > output.yaml
       - echo "application des manifests sur eks..."
       - kubectl apply -f output.yaml
 
