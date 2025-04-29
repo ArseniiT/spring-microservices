@@ -1,6 +1,10 @@
-version: 0.2 # Version du format buildspec d’AWS CodeBuild v1.1 trigger
+version: 0.2
 
 phases:
+  install:
+    commands:
+      - echo "installation des dépendances"
+
   pre_build:
     commands:
       - echo "authentification à ECR..."
@@ -9,9 +13,9 @@ phases:
       - export DOCKERHUB_SECRET=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
       - export DOCKERHUB_USERNAME=$(echo $DOCKERHUB_SECRET | jq -r '.username')
       - export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_SECRET | jq -r '.password')
-      - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-      - echo "compilation Maven..."
-      - cd spring-petclinic-$SERVICE_NAME
+      - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+      - echo "compilation du projet Maven..."
+      - cd spring-petclinic-${SERVICE_NAME}
       - mvn clean package
 
   build:
