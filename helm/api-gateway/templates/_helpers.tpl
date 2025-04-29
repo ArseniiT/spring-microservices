@@ -1,13 +1,13 @@
 {{/*
-Nom court du chart (ex. customers-service)
+Nom court du chart (ex. api-gateway)
 */}}
-{{- define "customers-service.name" -}}
+{{- define "api-gateway.name" -}}
 {{ .Chart.Name }}
 {{- end }}
 
 {{/*
-Nom complet avec nom de la release (ex. prod-customers-service)
+Nom complet avec nom de la release (ex. prod-api-gateway)
 */}}
-{{- define "customers-service.fullname" -}}
+{{- define "api-gateway.fullname" -}}
 {{ .Release.Name }}-{{ .Chart.Name }}
 {{- end }}

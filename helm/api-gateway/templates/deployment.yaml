@@ -1,24 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "customers-service.fullname" . }}  # Nom du déploiement basé sur release + chart
+  name: {{ include "api-gateway.fullname" . }}  # nom du déploiement basé sur release + chart
 spec:
-  replicas: {{ .Values.replicaCount }}               # Nombre de pods souhaités
+  replicas: {{ .Values.replicaCount }}          # nombre de pods souhaités
   selector:
     matchLabels:
-      app: {{ include "customers-service.name" . }}   # Utilisé pour associer les pods à ce déploiement
+      app: {{ include "api-gateway.name" . }}   # utilisé pour associer les pods à ce déploiement
   template:
     metadata:
       labels:
-        app: {{ include "customers-service.name" . }} # Label utilisé pour le service
+        app: {{ include "api-gateway.name" . }} # label utilisé pour le service
     spec:
-      imagePullSecrets:
-        - name: {{ include "customers-service.fullname" . }}-ecr-auth  # Secret d'authentification ECR
       containers:
-        - name: customers-service
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
+        - name: api-gateway
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # image Docker à déployer
           ports:
-            - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
+            - containerPort: {{ .Values.containerPort }}                   # port exposé dans le container
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ .Values.spring.profiles.active | quote }}         # Profil Spring actif (ex: docker)
+              value: {{ .Values.spring.profiles.active | quote }}          # profil Spring actif (ex: docker)
