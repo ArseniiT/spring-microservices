@@ -10,7 +10,7 @@ phases:
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      - yum install -y jq
+      - apt-get update && apt-get install -y jq
 
   pre_build:
     commands:

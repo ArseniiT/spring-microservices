@@ -18,21 +18,21 @@ for SERVICE in "${SERVICES[@]}"; do
   REPO_NAME="${ECR_REPO_PREFIX}/${SERVICE}"
 
   # suppression des images ECR
-  echo "- suppression des images dans ECR..."
-  IMAGE_IDS=$(aws ecr list-images \
-    --region $AWS_REGION \
-    --repository-name "$REPO_NAME" \
-    --query 'imageIds[*]' \
-    --output json)
+  # echo "- suppression des images dans ECR..."
+  # IMAGE_IDS=$(aws ecr list-images \
+  #   --region $AWS_REGION \
+  #   --repository-name "$REPO_NAME" \
+  #   --query 'imageIds[*]' \
+  #   --output json)
 
-  if [[ "$IMAGE_IDS" != "[]" ]]; then
-    aws ecr batch-delete-image \
-      --region $AWS_REGION \
-      --repository-name "$REPO_NAME" \
-      --image-ids "$IMAGE_IDS" >/dev/null && echo "  images supprimées."
-  else
-    echo "  aucune image à supprimer."
-  fi
+  # if [[ "$IMAGE_IDS" != "[]" ]]; then
+  #   aws ecr batch-delete-image \
+  #     --region $AWS_REGION \
+  #     --repository-name "$REPO_NAME" \
+  #     --image-ids "$IMAGE_IDS" >/dev/null && echo "  images supprimées."
+  # else
+  #   echo "  aucune image à supprimer."
+  # fi
 
   # suppression des objets S3
   echo "- suppression des objets dans le bucket S3 ($BUCKET_NAME)..."
