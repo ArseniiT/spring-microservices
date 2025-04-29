@@ -1,5 +1,5 @@
 image:
-  repository: amazonaws.com/customers-service
+  repository: amazonaws.com/admin-server
   tag: latest
 
 imagePullSecret:

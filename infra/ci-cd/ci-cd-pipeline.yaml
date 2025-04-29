@@ -70,11 +70,8 @@ Resources:
                   - eks:DescribeCluster
                   - eks:ListClusters
                   - eks:AccessKubernetesApi
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - sts:AssumeRole
                   - sts:GetCallerIdentity
+                  - sts:AssumeRole
                 Resource: "*"
 
   CodeBuildClusterAccess:
@@ -172,8 +169,6 @@ Resources:
             Value: !Ref ServiceName
           - Name: HELM_CHART_PATH
             Value: !Ref HelmChartPath
-          - Name: ROLE_ARN
-            Value: !GetAtt CodeBuildRole.Arn
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
