@@ -17,6 +17,8 @@ Parameters:
     Type: String
   DockerHubSecretArn:
     Type: String
+  AWSAccountId:                     
+    Type: String
 
 Resources:
   ArtifactStoreBucket:
@@ -169,6 +171,8 @@ Resources:
             Value: !Ref ServiceName
           - Name: HELM_CHART_PATH
             Value: !Ref HelmChartPath
+          - Name: AWS_ACCOUNT_ID               
+            Value: !Ref AWSAccountId
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE

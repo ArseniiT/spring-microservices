@@ -1,9 +1,9 @@
 version: 0.2
 
-env:
-  variables:
-    ECR_REGISTRY: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com # registre ECR utilisé pour docker login
-
+# env:
+#   variables:
+#     ECR_REGISTRY: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com # registre ECR utilisé pour docker login
+    
 phases:
   install:
     commands:
@@ -19,6 +19,7 @@ phases:
   pre_build:
     commands:
       - echo "authentification à ECR..."
+      - export ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
       - echo "authentification à DockerHub via Secrets Manager..."
       - export DOCKERHUB_SECRET=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
