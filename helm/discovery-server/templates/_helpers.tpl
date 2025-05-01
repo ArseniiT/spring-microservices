@@ -1,13 +1,13 @@
 {{/*
-Nom court du chart (ex. customers-service)
+Nom court du chart (ex. discovery-server)
 */}}
-{{- define "customers-service.name" -}}
+{{- define "discovery-server.name" -}}
 {{ .Chart.Name }}
 {{- end }}
 
 {{/*
-Nom complet avec nom de la release (ex. prod-customers-service)
+Nom complet avec nom de la release (ex. prod-discovery-server)
 */}}
-{{- define "customers-service.fullname" -}}
+{{- define "discovery-server.fullname" -}}
 {{ .Release.Name }}-{{ .Chart.Name }}
 {{- end }}

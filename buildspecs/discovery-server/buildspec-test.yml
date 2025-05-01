@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "installation des dépendances"
+
+  pre_build:
+    commands:
+      - echo "compilation et préparation du projet Maven..."
+      - cd spring-petclinic-${SERVICE_NAME}
+
+  build:
+    commands:
+      - echo "exécution des tests Maven..."
+      - mvn clean test
+
+artifacts:
+  files:
+    - '**/*'
