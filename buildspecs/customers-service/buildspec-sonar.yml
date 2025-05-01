@@ -1,9 +1,5 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_REGION: eu-west-3
-
 phases:
   install:
     commands:
@@ -15,14 +11,12 @@ phases:
       - echo "préparation du projet pour l’analyse SonarQube..."
       - export SECRETS=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
       - export SONARQUBE_TOKEN=$(echo $SECRETS | jq -r '.sonarqube_token')
-      - export MAVEN_OPTS="-Dsonar.token=$SONARQUBE_TOKEN"
       - cd spring-petclinic-${SERVICE_NAME}
 
   build:
     commands:
       - echo "exécution de l’analyse SonarQube..."
-      - mvn clean verify sonar:sonar -Dsonar.projectKey=spring-petclinic-${SERVICE_NAME} -Dsonar.organization=arseniit -Dsonar.host.url=https://sonarcloud.io
-
+      - mvn clean verify sonar:sonar -Dsonar.projectKey=spring-petclinic-${SERVICE_NAME} -Dsonar.organization=arseniit -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=$SONARQUBE_TOKEN
 artifacts:
   files:
     - '**/*'
