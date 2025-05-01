@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "customers-service.fullname" . }}  # Nom du déploiement basé sur release + chart
+  name: {{ include "visits-service.fullname" . }}  # Nom du déploiement basé sur release + chart
 spec:
   replicas: {{ .Values.replicaCount }}               # Nombre de pods souhaités
   selector:
     matchLabels:
-      app: {{ include "customers-service.name" . }}   # Utilisé pour associer les pods à ce déploiement
+      app: {{ include "visits-service.name" . }}   # Utilisé pour associer les pods à ce déploiement
   template:
     metadata:
       labels:
-        app: {{ include "customers-service.name" . }} # Label utilisé pour le service
+        app: {{ include "visits-service.name" . }} # Label utilisé pour le service
     spec:
       imagePullSecrets:
-        - name: {{ include "customers-service.fullname" . }}-ecr-auth  # Secret d'authentification ECR
+        - name: {{ include "visits-service.fullname" . }}-ecr-auth  # Secret d'authentification ECR
       containers:
-        - name: customers-service
+        - name: visits-service
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
           ports:
             - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container

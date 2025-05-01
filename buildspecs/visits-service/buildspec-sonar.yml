@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "installation des dépendances"
+      - apt-get update && apt-get install -y jq
+
+  pre_build:
+    commands:
+      - echo "préparation du projet pour l’analyse SonarQube..."
+      - export SECRETS=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
+      - export SONARQUBE_TOKEN=$(echo $SECRETS | jq -r '.sonarqube_token')
+      - cd spring-petclinic-${SERVICE_NAME}
+
+  build:
+    commands:
+      - echo "exécution de l’analyse SonarQube..."
+      - mvn clean verify sonar:sonar -Dsonar.projectKey=spring-petclinic-${SERVICE_NAME}-v2 -Dsonar.organization=arseniit -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=$SONARQUBE_TOKEN
+artifacts:
+  files:
+    - '**/*'

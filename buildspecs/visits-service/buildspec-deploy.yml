@@ -1,0 +1,41 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "installation de kubectl, helm et jq..."
+      - ARCH=$(uname -m)
+      - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
+      - curl -LO "https://dl.k8s.io/release/v1.27.2/bin/linux/${PLATFORM}/kubectl"
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/
+      - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - apt-get update && apt-get install -y jq
+
+  pre_build:
+    commands:
+      - echo "authentification à ECR..."
+      - export ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+      - echo "authentification à DockerHub via Secrets Manager..."
+      - export DOCKERHUB_SECRET=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
+      - export DOCKERHUB_USERNAME=$(echo $DOCKERHUB_SECRET | jq -r '.username')
+      - export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_SECRET | jq -r '.password')
+      - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+      - echo "mise à jour du kubeconfig pour EKS..."
+      - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
+      - export KUBECONFIG=/root/.kube/config
+      - echo "vérification d'accès au cluster..."
+      - kubectl get nodes
+
+  build:
+    commands:
+      - echo "génération des templates helm..."
+      - helm template ${SERVICE_NAME} ${HELM_CHART_PATH} --namespace default --set image.tag=latest > output.yaml
+      - echo "application des manifests sur eks..."
+      - kubectl apply -f output.yaml
+
+artifacts:
+  files:
+    - '**/*'
+  name: deploy-artifacts

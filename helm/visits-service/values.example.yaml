@@ -1,7 +1,0 @@
-image:
-  repository: amazonaws.com/customers-service
-  tag: latest
-
-imagePullSecret:
-  dockerconfigjson: 
-  

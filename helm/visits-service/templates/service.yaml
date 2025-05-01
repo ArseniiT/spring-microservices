@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "customers-service.fullname" . }}  # Nom du service exposé
+  name: {{ include "visits-service.fullname" . }}  # Nom du service exposé
 spec:
   type: {{ .Values.service.type }}                    # Type de service (ClusterIP, NodePort, etc.)
   selector:
-    app: {{ include "customers-service.name" . }}     # Cible les pods avec ce label
+    app: {{ include "visits-service.name" . }}     # Cible les pods avec ce label
   ports:
     - protocol: TCP
       port: {{ .Values.service.port }}                # Port du service (ex: 80)
