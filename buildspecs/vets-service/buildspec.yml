@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "installation des dépendances"
+
+  pre_build:
+    commands:
+      - echo "authentification à ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+      - echo "authentification à DockerHub via Secrets Manager..."
+      - export DOCKERHUB_SECRET=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
+      - export DOCKERHUB_USERNAME=$(echo $DOCKERHUB_SECRET | jq -r '.username')
+      - export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_SECRET | jq -r '.password')
+      - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+      - echo "compilation du projet Maven..."
+      - cd spring-petclinic-${SERVICE_NAME}
+      - mvn clean package
+
+  build:
+    commands:
+      - echo "construction de l’image Docker..."
+      - docker build -t $SERVICE_NAME .
+
+  post_build:
+    commands:
+      - echo "tag et push de l’image Docker dans ECR..."
+      - docker tag $SERVICE_NAME:latest $ECR_REPO_URI:latest
+      - docker push $ECR_REPO_URI:latest
