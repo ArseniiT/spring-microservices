@@ -16,7 +16,7 @@ phases:
   build:
     commands:
       - echo "exécution de l’analyse SonarQube..."
-      - mvn clean verify sonar:sonar -Dsonar.projectKey=spring-petclinic-${SERVICE_NAME} -Dsonar.organization=arseniit -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=$SONARQUBE_TOKEN
+      - mvn clean verify sonar:sonar -Dsonar.projectKey=spring-petclinic-${SERVICE_NAME}-v2 -Dsonar.organization=arseniit -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=$SONARQUBE_TOKEN
 artifacts:
   files:
     - '**/*'
