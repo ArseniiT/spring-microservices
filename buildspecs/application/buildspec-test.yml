@@ -1,0 +1,30 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: eu-west-3
+
+phases:
+  install:
+    commands:
+      - echo "installation des outils nécessaires"
+      - apt-get update && apt-get install -y curl jq
+
+  pre_build:
+    commands:
+      - echo "chargement des variables depuis Secrets Manager"
+      - export SECRETS=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
+      - export TEST_DOMAIN=$(echo $SECRETS | jq -r '.test_domain')
+      - echo "vérification du domaine utilisé: $TEST_DOMAIN"
+
+  build:
+    commands:
+      - echo "lancement des tests end-to-end sur les points d’entrée publics..."
+      - curl -s -o /dev/null -w "%{http_code}" $TEST_DOMAIN/api/customer/owners | grep -q 200
+      - curl -s -o /dev/null -w "%{http_code}" $TEST_DOMAIN/api/vet/vets | grep -q 200
+      - curl -s -o /dev/null -w "%{http_code}" $TEST_DOMAIN/api/visit/owners/1/pets/1/visits | grep -q 200
+      - echo "tous les endpoints principaux ont répondu avec succès"
+
+artifacts:
+  files:
+    - '**/*'

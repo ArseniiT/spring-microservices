@@ -1,0 +1,14 @@
+{
+    "Parameters": {
+      "ServiceName": "application",
+      "ECRRepoUri": "",
+      "HelmChartPath": "helm",
+      "GitHubRepo": "ArseniiT/spring-microservices",
+      "GitHubBranch": "main",
+      "GitHubConnectionArn": "arn:aws:codeconnections:eu-west-3:YOUR_ACCOUNT_ID:connection/YOUR_CONNECTION_ID",
+      "AWSAccountId": "YOUR_ACCOUNT_ID",
+      "AWSRegion": "eu-west-3",
+      "DockerHubSecretArn": "arn:aws:secretsmanager:eu-west-3:YOUR_ACCOUNT_ID:secret/YOUR_SECRET_NAME"
+    }
+}
+  

@@ -1,0 +1,40 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: eu-west-3
+    SERVICES: "discovery-server config-server admin-server api-gateway customers-service vets-service visits-service"
+
+phases:
+  install:
+    commands:
+      - echo "installation de kubectl, helm et jq..."
+      - ARCH=$(uname -m)
+      - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
+      - curl -LO "https://dl.k8s.io/release/v1.27.2/bin/linux/${PLATFORM}/kubectl"
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/
+      - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - apt-get update && apt-get install -y jq
+
+  pre_build:
+    commands:
+      - echo "authentification à ECR et préparation du kubeconfig..."
+      - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+      - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
+      - export KUBECONFIG=/root/.kube/config
+      - kubectl get nodes
+
+  build:
+    commands:
+      - echo "déploiement de tous les services avec Helm..."
+      - for SERVICE in $SERVICES; do
+          echo "Déploiement de $SERVICE...";
+          helm template $SERVICE helm/$SERVICE --namespace default --set image.tag=latest > output-$SERVICE.yaml;
+          kubectl apply -f output-$SERVICE.yaml;
+        done
+
+artifacts:
+  files:
+    - '**/*'

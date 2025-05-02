@@ -11,6 +11,8 @@
 # ./deploy-cicd-with-merge.sh vets-service
 # ./deploy-cicd-with-merge.sh visits-service
 
+# ./deploy-cicd-with-merge.sh application
+
 SERVICE=$1
 
 if [ -z "$SERVICE" ]; then
