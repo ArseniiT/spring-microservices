@@ -26,6 +26,7 @@ eksctl delete cluster --name $CLUSTER_NAME --region $AWS_REGION
 echo "Suppression du contexte kubectl local..."
 kubectl config delete-cluster arn:aws:eks:$AWS_REGION:*:cluster/$CLUSTER_NAME 2>/dev/null
 kubectl config delete-context arn:aws:eks:$AWS_REGION:*:cluster/$CLUSTER_NAME 2>/dev/null
+kubectl config unset current-context 2>/dev/null
 
 # === Suppression des images Docker et des dépôts ECR ===
 for SERVICE in "${SERVICES[@]}"; do
