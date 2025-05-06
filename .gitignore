@@ -47,4 +47,5 @@ infra/secrets/secretstore.yaml
 *.params.json
 
 # ignorer les fichiers JSON sensibles dans le dossier des scripts
-projetpetclinicinitial/scripts/*.json
+scripts/*.json
+infra/secrets/clustersecretstore.yaml
