@@ -45,3 +45,6 @@ infra/secrets/secretstore.yaml
 
 # CloudFormation variables
 *.params.json
+
+# ignorer les fichiers JSON sensibles dans le dossier des scripts
+projetpetclinicinitial/scripts/*.json
