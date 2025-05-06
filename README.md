@@ -1,6 +1,8 @@
 # Déploiement de Spring Petclinic sur AWS EKS avec ALB, Route 53 et HTTPS
 
-Ce guide explique étape par étape comment déployer les microservices de Spring Petclinic sur un cluster **EKS** avec un **AWS ALB** (Application Load Balancer), un **nom de domaine personnalisé via Route 53**, et **certificat HTTPS via ACM**.
+Ce guide explique étape par étape comment déployer les microservices de Spring Petclinic sur un cluster **EKS**
+avec un **AWS ALB** (Application Load Balancer), un **nom de domaine personnalisé via Route 53**, et
+**certificat HTTPS via ACM**. L'intégration se fait via **ArgoCD** et **Helm**, avec support du déploiement **local avec valeurs privées**.
 
 ---
 
@@ -10,6 +12,7 @@ Ce guide explique étape par étape comment déployer les microservices de Sprin
 - `eksctl` installé
 - `kubectl` installé
 - `helm` installé
+- `argocd` CLI installé
 - Un domaine enregistré dans Route 53
 - Un certificat SSL dans ACM pour ce domaine
 
@@ -61,7 +64,43 @@ cd ../../spring-petclinic-helm-charts
 
 ---
 
-### 5. Vérifier l’Ingress généré
+### 5. Supprimer la synchronisation automatique dans ArgoCD (optionnel pour tests locaux)
+
+```bash
+argocd app set <app-name> --sync-policy none
+```
+
+---
+
+### 6. Appliquer une application localement avec valeurs secrètes (solution au problème Helm/ArgoCD)
+
+```bash
+cd spring-petclinic-helm-charts
+
+argocd app sync api-gateway-app   --local api-gateway   --prune --force
+```
+
+> Assurez-vous, avant cela, d’avoir correctement créé :
+>
+> - `values.yaml` (paramètres standards)
+> - `values.secret.yaml` (avec certificateArn, domainName, ECR etc)
+>
+> **Important** : les deux fichiers doivent être présents dans le dossier de la chart.
+>
+> Exemple :
+>
+> ```yaml
+> global:
+>   certificateArn: "arn:aws:acm:eu-west-3:..."
+>   domainName: "greta25.click"
+> image:
+>   repository: "123456789.dkr.ecr.eu-west-3.amazonaws.com/spring-petclinic/api-gateway"
+>   tag: "latest"
+> ```
+
+---
+
+### 7. Vérifier l’Ingress généré
 
 ```bash
 kubectl get ingress -A
@@ -71,7 +110,7 @@ Attendre que l'ALB apparaisse avec le nom de domaine (DNS AWS) dans le champ `AD
 
 ---
 
-### 6. Mettre à jour le DNS avec Route 53
+### 8. Mettre à jour le DNS avec Route 53
 
 ```bash
 cd ../projetpetclinicinitial/scripts
@@ -82,28 +121,42 @@ cd ../projetpetclinicinitial/scripts
 
 ---
 
-### 7. Accéder à l'application
+### 9. Accéder à l'application
 
-Une fois la propagation DNS terminée :
+Une fois la propagation DNS terminée (~1-2 minutes) :
 
 ```bash
-curl http://votre-domaine
-curl https://votre-domaine
+curl https://greta25.click
 ```
 
 ---
 
-## Remarques
+## Résolution des problèmes de `values.secret.yaml`
 
-- Le fichier `values.secret.yaml` contient les valeurs sensibles : ARN du certificat, nom de domaine, repository ECR. Il ne doit **pas** être versionné.
-- Le fichier `values.example.yaml` est une version publique à titre d'exemple.
+Le flag `--values` **n’est pas supporté** directement dans `argocd app sync`. Au lieu de cela :
+- Définir les fichiers `values.yaml` et `values.secret.yaml` **dans le dossier Helm** de l’application
+- S’assurer que la `source` ArgoCD contient les deux fichiers dans le champ `Helm Values`
+- Désactiver la sync automatique
+- Utiliser `--local` + `--prune --force` pour tester localement
 
 ---
 
-## Dépannage
+## Remarques de sécurité
 
-### Erreur : `dualstack.none.`
+- **NE PAS publier `values.secret.yaml` dans Git**. Ajouter à `.gitignore`
+- Pour illustrer les valeurs, créer `values.example.yaml` avec des valeurs fictives
 
-Cela signifie que **l’Ingress n’est pas encore créé**. D'abord lancer `apply-apps.sh`, puis réessayer `update-route53-record.sh`.
+---
+
+## Exemple de valeurs pour `values.secret.yaml`
+
+```yaml
+global:
+  certificateArn: "arn:aws:acm:eu-west-3:xxxxxxx"
+  domainName: "greta25.click"
+image:
+  repository: "123456789.dkr.ecr.eu-west-3.amazonaws.com/spring-petclinic/api-gateway"
+  tag: "latest"
+```
 
 ---

@@ -39,6 +39,9 @@ spring-petclinic-*/target/
 
 # Helm
 values.secret.yaml
+infra/secrets/clustersecretstore.yaml.yaml
+infra/secrets/dockerhub-externalsecret.yaml
+infra/secrets/secretstore.yaml
 
 # CloudFormation variables
 *.params.json
