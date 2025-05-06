@@ -15,7 +15,7 @@ phases:
       - echo "chargement des variables depuis Secrets Manager"
       - export SECRETS=$(aws secretsmanager get-secret-value --secret-id dockerhub-credentials --region $AWS_REGION --query SecretString --output text)
       - export TEST_DOMAIN=$(echo $SECRETS | jq -r '.test_domain')
-      - echo "vérification du domaine utilisé: $TEST_DOMAIN"
+      - echo "vérification du domaine utilisé $TEST_DOMAIN"
 
   build:
     commands:
