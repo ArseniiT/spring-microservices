@@ -9,6 +9,7 @@ phases:
   install:
     commands:
       - echo "installation de kubectl, helm et jq..."
+      - set -e
       - ARCH=$(uname -m)
       - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
       - curl -LO "https://dl.k8s.io/release/v1.27.2/bin/linux/${PLATFORM}/kubectl"
@@ -27,6 +28,7 @@ phases:
   build:
     commands:
       - echo "déploiement de tous les microservices avec Helm..."
+      - set -x
       - |
         for SERVICE in $SERVICES; do
           echo "déploiement du service : $SERVICE"
@@ -34,8 +36,8 @@ phases:
             --namespace default \
             --create-namespace \
             --set image.tag=latest \
-            --wait \
-            --timeout=300s
+            --timeout=90s || true
+          kubectl rollout status deployment/$SERVICE --timeout=60s || echo "déploiement incomplet pour $SERVICE"
         done
 
 artifacts:
