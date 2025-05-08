@@ -16,7 +16,7 @@ for SERVICE in "${SERVICES[@]}"; do
   STACK_NAME="${SERVICE}-ci-cd"
   BUCKET_NAME="${SERVICE}-pipeline-artifacts"
   REPO_NAME="${ECR_REPO_PREFIX}/${SERVICE}"
-
+  
   # suppression des images ECR
   # echo "- suppression des images dans ECR..."
   # IMAGE_IDS=$(aws ecr list-images \
@@ -43,5 +43,20 @@ for SERVICE in "${SERVICES[@]}"; do
   aws cloudformation delete-stack --stack-name $STACK_NAME
 done
 
+# nettoyage du pipeline global (application)
 echo ""
-echo "Tous les services ont été nettoyés."
+echo "=== Nettoyage du pipeline global : application ==="
+
+APP_STACK_NAME="application-ci-cd"
+APP_BUCKET_NAME="application-pipeline-artifacts-${APP_STACK_NAME}"
+
+# suppression du bucket S3 global
+echo "- suppression des objets dans le bucket S3 ($APP_BUCKET_NAME)..."
+aws s3 rm s3://$APP_BUCKET_NAME --recursive >/dev/null 2>&1 && echo "  objets supprimés (si trouvés)."
+
+# suppression du stack CloudFormation global
+echo "- suppression du stack CloudFormation ($APP_STACK_NAME)..."
+aws cloudformation delete-stack --stack-name $APP_STACK_NAME
+
+echo ""
+echo "Tous les services et le pipeline global ont été nettoyés."
