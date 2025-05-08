@@ -21,7 +21,7 @@ Parameters:
 Resources:
   ArtifactStoreBucket:
     Type: AWS::S3::Bucket
-    Properties:
+    Properties: {}
       # BucketName: !Sub ${ServiceName}-pipeline-artifacts-${AWS::StackName}
 
   CodeBuildRole:
