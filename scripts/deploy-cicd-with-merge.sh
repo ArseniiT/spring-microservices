@@ -70,7 +70,7 @@ fi
 
 # déployer
 aws cloudformation deploy \
-  --template-file "$PROJECT_ROOT/infra/ci-cd/ci-cd-pipeline.yaml" \
+  --template-file "$TEMPLATE_FILE" \
   --stack-name "${SERVICE}-ci-cd" \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides file://"$MERGED_PARAMS"
