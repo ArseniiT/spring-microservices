@@ -27,14 +27,15 @@ phases:
   build:
     commands:
       - echo "déploiement de tous les microservices avec Helm..."
-      - for SERVICE in $SERVICES; do
-          echo "déploiement du service $SERVICE";
+      - |
+        for SERVICE in $SERVICES; do
+          echo "déploiement du service : $SERVICE"
           helm upgrade --install $SERVICE helm/$SERVICE \
             --namespace default \
             --create-namespace \
             --set image.tag=latest \
             --wait \
-            --timeout=300s;
+            --timeout=300s
         done
 
 artifacts:
