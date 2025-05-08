@@ -1,0 +1,195 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Pipeline CI/CD global pour Spring Petclinic (déploiement Helm uniquement)
+
+Parameters:
+  ServiceName:
+    Type: String
+  GitHubRepo:
+    Type: String
+  GitHubBranch:
+    Type: String
+    Default: main
+  GitHubConnectionArn:
+    Type: String
+  HelmChartPath:
+    Type: String
+  DockerHubSecretArn:
+    Type: String
+  AWSAccountId:
+    Type: String
+
+Resources:
+  ArtifactStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ServiceName}-pipeline-artifacts-${AWS::StackName}
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ServiceName}-codebuild-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+                - codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+      Policies:
+        - PolicyName: CodeStarConnectionsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codestar-connections:UseConnection
+                  - codestar-connections:GetConnection
+                Resource: !Ref GitHubConnectionArn
+        - PolicyName: AllowSecretsManagerAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref DockerHubSecretArn
+        - PolicyName: AllowEKSAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - eks:DescribeCluster
+                  - eks:ListClusters
+                  - eks:AccessKubernetesApi
+                  - sts:GetCallerIdentity
+                  - sts:AssumeRole
+                Resource: "*"
+
+  CodeBuildClusterAccess:
+    Type: AWS::EKS::AccessEntry
+    Properties:
+      ClusterName: petclinic-cluster
+      PrincipalArn: !GetAtt CodeBuildRole.Arn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+          AccessScope:
+            Type: cluster
+
+  CodeBuildTestProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ServiceName}-tests
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub buildspecs/${ServiceName}/buildspec-test.yml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:6.0
+        PrivilegedMode: false
+        EnvironmentVariables:
+          - Name: SERVICE_NAME
+            Value: !Ref ServiceName
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+
+  CodeBuildDeployProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ServiceName}-deploy
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub buildspecs/${ServiceName}/buildspec-deploy.yml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:6.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+          - Name: SERVICE_NAME
+            Value: !Ref ServiceName
+          - Name: HELM_CHART_PATH
+            Value: !Ref HelmChartPath
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWSAccountId
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub ${ServiceName}-pipeline
+      RoleArn: !GetAtt CodeBuildRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactStoreBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: 1
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ConnectionArn: !Ref GitHubConnectionArn
+                FullRepositoryId: !Ref GitHubRepo
+                BranchName: !Ref GitHubBranch
+                DetectChanges: false
+              RunOrder: 1
+
+        - Name: Tests
+          Actions:
+            - Name: TestsAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildTestProject
+              RunOrder: 1
+
+        - Name: Deploy
+          Actions:
+            - Name: HelmDeploy
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildDeployProject
+              RunOrder: 1
+
+      Triggers:
+        - ProviderType: CodeStarSourceConnection
+          GitConfiguration:
+            SourceActionName: SourceAction
+            Push:
+              - Branches:
+                  Includes: ['main']
+                FilePaths:
+                  Includes: ['buildspecs/${ServiceName}/**', '${HelmChartPath}/**']

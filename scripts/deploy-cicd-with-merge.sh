@@ -61,6 +61,13 @@ fi
      })
  ' "$COMMON_PARAMS" "$SERVICE_PARAMS" > "$MERGED_PARAMS"
 
+# verifier si le service est "application" ou un autre service
+if [ "$SERVICE" = "application" ]; then
+  TEMPLATE_FILE="$PROJECT_ROOT/infra/ci-cd/ci-cd-app-pipeline.yaml"
+else
+  TEMPLATE_FILE="$PROJECT_ROOT/infra/ci-cd/ci-cd-pipeline.yaml"
+fi
+
 # déployer
 aws cloudformation deploy \
   --template-file "$PROJECT_ROOT/infra/ci-cd/ci-cd-pipeline.yaml" \

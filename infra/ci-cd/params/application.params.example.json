@@ -1,7 +1,6 @@
 {
     "Parameters": {
       "ServiceName": "application",
-      "ECRRepoUri": "",
       "HelmChartPath": "helm",
       "GitHubRepo": "ArseniiT/spring-microservices",
       "GitHubBranch": "main",

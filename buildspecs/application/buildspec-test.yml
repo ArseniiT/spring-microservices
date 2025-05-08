@@ -25,6 +25,9 @@ phases:
         curl -s -o /dev/null -w "%{http_code}" $TEST_DOMAIN/api/vet/vets | grep -q 200
         curl -s -o /dev/null -w "%{http_code}" $TEST_DOMAIN/api/visit/owners/1/pets/1/visits | grep -q 200
         echo "tous les endpoints principaux ont répondu avec succès"
+  post_build:
+    commands:
+      - echo "tests terminés avec succès"
 
 artifacts:
   files:

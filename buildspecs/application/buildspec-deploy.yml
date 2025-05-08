@@ -12,27 +12,29 @@ phases:
       - ARCH=$(uname -m)
       - if [ "$ARCH" = "aarch64" ]; then PLATFORM="arm64"; else PLATFORM="amd64"; fi
       - curl -LO "https://dl.k8s.io/release/v1.27.2/bin/linux/${PLATFORM}/kubectl"
-      - chmod +x ./kubectl
-      - mv ./kubectl /usr/local/bin/
+      - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
       - curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       - apt-get update && apt-get install -y jq
 
   pre_build:
     commands:
-      - echo "authentification à ECR et préparation du kubeconfig..."
+      - echo "authentification EKS et récupération des informations..."
       - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
       - aws eks update-kubeconfig --region $AWS_REGION --name petclinic-cluster
       - export KUBECONFIG=/root/.kube/config
       - kubectl get nodes
 
   build:
     commands:
-      - echo "déploiement de tous les services avec Helm..."
+      - echo "déploiement de tous les microservices avec Helm..."
       - for SERVICE in $SERVICES; do
-          echo "Déploiement de $SERVICE...";
-          helm template $SERVICE helm/$SERVICE --namespace default --set image.tag=latest > output-$SERVICE.yaml;
-          kubectl apply -f output-$SERVICE.yaml;
+          echo "déploiement du service : $SERVICE";
+          helm upgrade --install $SERVICE helm/$SERVICE \
+            --namespace default \
+            --create-namespace \
+            --set image.tag=latest \
+            --wait \
+            --timeout=300s;
         done
 
 artifacts:
