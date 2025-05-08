@@ -28,7 +28,7 @@ phases:
     commands:
       - echo "déploiement de tous les microservices avec Helm..."
       - for SERVICE in $SERVICES; do
-          echo "déploiement du service : $SERVICE";
+          echo "déploiement du service $SERVICE";
           helm upgrade --install $SERVICE helm/$SERVICE \
             --namespace default \
             --create-namespace \
