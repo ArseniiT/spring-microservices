@@ -22,7 +22,7 @@ Resources:
   ArtifactStoreBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${ServiceName}-pipeline-artifacts-${AWS::StackName}
+      # BucketName: !Sub ${ServiceName}-pipeline-artifacts-${AWS::StackName}
 
   CodeBuildRole:
     Type: AWS::IAM::Role
