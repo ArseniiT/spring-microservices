@@ -34,7 +34,6 @@ phases:
           echo "déploiement du service : $SERVICE"
           helm upgrade --install $SERVICE helm/$SERVICE \
             --namespace default \
-            --create-namespace \
             --set image.tag=latest \
             --timeout=90s || true
           kubectl rollout status deployment/$SERVICE --timeout=60s || echo "déploiement incomplet pour $SERVICE"
