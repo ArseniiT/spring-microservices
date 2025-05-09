@@ -118,3 +118,17 @@ done
 
 # --- Vérification finale
 kubectl get secret dockerhub-credentials -n default || echo "Le secret dockerhub-credentials n'est pas encore disponible."
+
+# --- Ajout automatique du rôle CodeBuild dans aws-auth
+echo "Ajout du rôle CodeBuild dans aws-auth..."
+ROLE_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:role/application-codebuild-role"
+
+kubectl get configmap aws-auth -n kube-system -o yaml > /tmp/aws-auth.yaml
+
+if ! grep -q "$ROLE_ARN" /tmp/aws-auth.yaml; then
+  echo "Ajout du rôle $ROLE_ARN à aws-auth..."
+  printf "\n  - rolearn: %s\n    username: codebuild\n    groups:\n      - system:masters\n" "$ROLE_ARN" >> /tmp/aws-auth.yaml
+  kubectl apply -f /tmp/aws-auth.yaml
+else
+  echo "Le rôle est déjà présent dans aws-auth."
+fi
