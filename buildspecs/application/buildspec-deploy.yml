@@ -4,6 +4,7 @@ env:
   variables:
     AWS_REGION: eu-west-3
     SERVICES: "discovery-server config-server admin-server api-gateway customers-service vets-service visits-service"
+    IMAGE_REPO_PREFIX: ${IMAGE_REPO_PREFIX}
 
 phases:
   install:
@@ -34,7 +35,8 @@ phases:
           echo "déploiement du service : $SERVICE"
           helm upgrade --install $SERVICE helm/$SERVICE \
             --namespace default \
-            -f helm/$SERVICE/values.secret.yaml \
+            --set image.repository=$IMAGE_REPO_PREFIX/$SERVICE \
+            --set image.tag=latest \
             --timeout=90s || true
 
           sleep 10

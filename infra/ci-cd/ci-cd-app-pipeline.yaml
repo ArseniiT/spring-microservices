@@ -22,7 +22,6 @@ Resources:
   ArtifactStoreBucket:
     Type: AWS::S3::Bucket
     Properties: {}
-      # BucketName: !Sub ${ServiceName}-pipeline-artifacts-${AWS::StackName}
 
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -126,6 +125,9 @@ Resources:
             Value: !Ref HelmChartPath
           - Name: AWS_ACCOUNT_ID
             Value: !Ref AWSAccountId
+          - Name: IMAGE_REPO_PREFIX
+            Type: SECRETS_MANAGER
+            Value: dockerhub-credentials:IMAGE_REPO_PREFIX
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
