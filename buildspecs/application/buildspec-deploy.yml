@@ -33,14 +33,14 @@ phases:
       - |
         for SERVICE in $SERVICES; do
           echo "déploiement du service : $SERVICE"
-          helm upgrade --install $SERVICE helm/$SERVICE \
+          helm template $SERVICE helm/$SERVICE \
             --namespace default \
             --set image.repository=$IMAGE_REPO_PREFIX/$SERVICE \
             --set image.tag=latest \
-            --timeout=90s || true
+            > output-${SERVICE}.yaml
 
+          kubectl apply -f output-${SERVICE}.yaml || echo "erreur d'application pour $SERVICE"
           sleep 10
-
           kubectl rollout status deployment/$SERVICE --timeout=60s || echo "déploiement incomplet pour $SERVICE"
         done
 
