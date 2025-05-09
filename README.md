@@ -33,10 +33,26 @@ cd projetpetclinicinitial/scripts
 
 ### 2. Installer ArgoCD
 
+Si vous n'avez pas encore installé l'utilitaire en ligne de commande :
+
 ```bash
-# Toujours dans le même script
-# Cela installera ArgoCD dans le namespace argocd
+# Installer le CLI ArgoCD
+VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/latest" | jq -r .tag_name)
+curl -sLO https://github.com/argoproj/argo-cd/releases/download/${VERSION}/argocd-linux-amd64
+chmod +x argocd-linux-amd64
+sudo mv argocd-linux-amd64 /usr/local/bin/argocd
 ```
+
+Ensuite, déployez ArgoCD dans votre cluster EKS :
+
+```bash
+# Installer ArgoCD dans le namespace argocd
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+> Cela installera tous les composants ArgoCD dans le cluster Kubernetes.
+
 
 ---
 
