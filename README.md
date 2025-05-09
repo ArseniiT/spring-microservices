@@ -53,14 +53,19 @@ cd projetpetclinicinitial/scripts
 
 ---
 
-### 4. Appliquer les applications ArgoCD (Helm charts)
+### 4. Connexion à ArgoCD localement (obligatoire pour les tests `--local`)
+
+ArgoCD ne publie pas d’interface par défaut. Il faut ouvrir un port local et s’y connecter :
 
 ```bash
-cd ../../spring-petclinic-helm-charts
-./apply-apps.sh
+# 1. Ouvrir le port local
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# 2. Récupérer le mot de passe admin et se connecter
+argocd login localhost:8080   --username admin   --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)   --insecure
 ```
 
-> Cela applique tous les fichiers `*-app.yaml` dans ArgoCD. Chaque application pointe sur son dossier Helm respectif.
+💡 Important : cette étape est nécessaire pour toute commande `argocd app sync --local`. Sans elle, vous obtiendrez `PermissionDenied`.
 
 ---
 
@@ -72,7 +77,7 @@ argocd app set <app-name> --sync-policy none
 
 ---
 
-### 6. Appliquer une application localement avec valeurs secrètes (solution au problème Helm/ArgoCD)
+### 6. Appliquer une application localement (pour tester avec `values.secret.yaml`)
 
 ```bash
 cd spring-petclinic-helm-charts
@@ -80,33 +85,17 @@ cd spring-petclinic-helm-charts
 argocd app sync api-gateway-app   --local api-gateway   --prune --force
 ```
 
-> Assurez-vous, avant cela, d’avoir correctement créé :
->
-> - `values.yaml` (paramètres standards)
-> - `values.secret.yaml` (avec certificateArn, domainName, ECR etc)
->
-> **Important** : les deux fichiers doivent être présents dans le dossier de la chart.
->
-> Exemple :
->
-> ```yaml
-> global:
->   certificateArn: "arn:aws:acm:eu-west-3:..."
->   domainName: "greta25.click"
-> image:
->   repository: "123456789.dkr.ecr.eu-west-3.amazonaws.com/spring-petclinic/api-gateway"
->   tag: "latest"
-> ```
+> Cela utilise le contenu local du dossier `api-gateway`, y compris `values.yaml` et `values.secret.yaml`.
 
 ---
 
-### 7. Vérifier l’Ingress généré
+### 7. Vérifier que le ALB a été créé
 
 ```bash
 kubectl get ingress -A
 ```
 
-Attendre que l'ALB apparaisse avec le nom de domaine (DNS AWS) dans le champ `ADDRESS`.
+> Vous devriez voir un DNS AWS attribué (champ `ADDRESS`) au `Ingress` correspondant.
 
 ---
 
@@ -117,18 +106,17 @@ cd ../projetpetclinicinitial/scripts
 ./update-route53-record.sh
 ```
 
-> Ce script met à jour le record A du domaine (ex: `greta25.click`) pour qu'il pointe vers le DNS du ALB.
+> Le script détecte automatiquement le DNS du ALB et met à jour l'enregistrement `A` de Route 53.
 
 ---
 
-### 9. Accéder à l'application
-
-Une fois la propagation DNS terminée (~1-2 minutes) :
+### 9. Accéder à l’application via HTTPS
 
 ```bash
 curl https://greta25.click
 ```
 
+> Ou ouvrir dans le navigateur.
 ---
 
 ## Résolution des problèmes de `values.secret.yaml`
@@ -158,5 +146,3 @@ image:
   repository: "123456789.dkr.ecr.eu-west-3.amazonaws.com/spring-petclinic/api-gateway"
   tag: "latest"
 ```
-
----
