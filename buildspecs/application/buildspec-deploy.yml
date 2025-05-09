@@ -34,7 +34,7 @@ phases:
           echo "déploiement du service : $SERVICE"
           helm upgrade --install $SERVICE helm/$SERVICE \
             --namespace default \
-            --set image.tag=latest \
+            -f helm/$SERVICE/values.secret.yaml \
             --timeout=90s || true
 
           sleep 10
