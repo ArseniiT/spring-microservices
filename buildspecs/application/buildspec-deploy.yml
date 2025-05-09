@@ -41,7 +41,8 @@ phases:
 
           kubectl apply -f output-${SERVICE}.yaml || echo "erreur d'application pour $SERVICE"
           sleep 10
-          kubectl rollout status deployment/$SERVICE --timeout=60s || echo "déploiement incomplet pour $SERVICE"
+          DEPLOYMENT_NAME=$(kubectl get deployment -n default -o jsonpath="{.items[?(@.metadata.labels.app=='$SERVICE')].metadata.name}")
+          kubectl rollout status deployment/$DEPLOYMENT_NAME --timeout=60s || echo "déploiement incomplet pour $SERVICE"
         done
 
 artifacts:
