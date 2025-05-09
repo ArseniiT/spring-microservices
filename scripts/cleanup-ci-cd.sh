@@ -34,11 +34,13 @@ for SERVICE in "${SERVICES[@]}"; do
   #   echo "  aucune image à supprimer."
   # fi
 
-  # suppression des objets S3
   echo "- suppression des objets dans le bucket S3 ($BUCKET_NAME)..."
-  aws s3 rm s3://$BUCKET_NAME --recursive >/dev/null 2>&1 && echo "  objets supprimés (si trouvés)."
+  aws s3api list-object-versions --bucket $BUCKET_NAME --output json 2>/dev/null \
+    | jq -r '.Versions[]?, .DeleteMarkers[]? | [.Key, .VersionId] | @tsv' \
+    | while IFS=$'\t' read -r key version_id; do
+        aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version_id" >/dev/null
+      done && echo "  objets supprimés (si trouvés)."
 
-  # suppression du stack CloudFormation
   echo "- suppression du stack CloudFormation ($STACK_NAME)..."
   aws cloudformation delete-stack --stack-name $STACK_NAME
 done
@@ -48,15 +50,30 @@ echo ""
 echo "=== Nettoyage du pipeline global : application ==="
 
 APP_STACK_NAME="application-ci-cd"
-APP_BUCKET_NAME="application-pipeline-artifacts-${APP_STACK_NAME}"
 
-# suppression du bucket S3 global
-echo "- suppression des objets dans le bucket S3 ($APP_BUCKET_NAME)..."
-aws s3 rm s3://$APP_BUCKET_NAME --recursive >/dev/null 2>&1 && echo "  objets supprimés (si trouvés)."
+# récupération du nom réel du bucket créé dynamiquement
+REAL_APP_BUCKET=$(aws cloudformation describe-stack-resources \
+  --stack-name $APP_STACK_NAME \
+  --region $AWS_REGION \
+  --query "StackResources[?LogicalResourceId=='ArtifactStoreBucket'].PhysicalResourceId" \
+  --output text)
 
-# suppression du stack CloudFormation global
+if [ -n "$REAL_APP_BUCKET" ]; then
+  echo "- suppression des objets dans le bucket S3 ($REAL_APP_BUCKET)..."
+  aws s3api list-object-versions --bucket $REAL_APP_BUCKET --output json 2>/dev/null \
+    | jq -r '.Versions[]?, .DeleteMarkers[]? | [.Key, .VersionId] | @tsv' \
+    | while IFS=$'\t' read -r key version_id; do
+        aws s3api delete-object --bucket "$REAL_APP_BUCKET" --key "$key" --version-id "$version_id" >/dev/null
+      done && echo "  objets supprimés (si trouvés)."
+else
+  echo "Bucket non trouvé dans le stack CloudFormation $APP_STACK_NAME"
+fi
+
 echo "- suppression du stack CloudFormation ($APP_STACK_NAME)..."
 aws cloudformation delete-stack --stack-name $APP_STACK_NAME
+
+echo "attente de la suppression complète du stack global..."
+aws cloudformation wait stack-delete-complete --stack-name $APP_STACK_NAME && echo "stack supprimé."
 
 echo ""
 echo "Tous les services et le pipeline global ont été nettoyés."
