@@ -36,6 +36,9 @@ phases:
             --namespace default \
             --set image.tag=latest \
             --timeout=90s || true
+
+          sleep 10
+
           kubectl rollout status deployment/$SERVICE --timeout=60s || echo "déploiement incomplet pour $SERVICE"
         done
 
