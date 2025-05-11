@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "admin-server.fullname" . }}      # nom du service exposé
+  labels:
+    app: {{ include "admin-server.name" . }}     # label utilisé pour le service
 spec:
   type: {{ .Values.service.type }}                   # type de service Kubernetes (ClusterIP, NodePort, etc.)
   selector:
     app: {{ include "admin-server.name" . }}          # cible les pods ayant ce label
   ports:
-    - protocol: TCP
+    - name: {{ .Values.service.portName | default "http" }}
+      protocol: TCP
       port: {{ .Values.service.port }}                # port exposé par le service
       targetPort: {{ .Values.containerPort }}         # port interne dans le conteneur

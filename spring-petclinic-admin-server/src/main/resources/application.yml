@@ -14,3 +14,13 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true

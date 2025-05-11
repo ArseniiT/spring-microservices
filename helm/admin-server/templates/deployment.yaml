@@ -15,8 +15,10 @@ spec:
       containers:
         - name: admin-server
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           ports:
-            - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
+            - name: {{ .Values.service.portName | default "http" }}
+              containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.spring.profiles.active | quote }}         # Profil Spring actif (ex: docker)

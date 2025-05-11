@@ -7,9 +7,20 @@ image:
 containerPort: 8080                     # Port exposé par le conteneur
 
 service:
+  portName: ""
   type: ClusterIP                       # Type de service Kubernetes
   port: 80                              # Port du service exposé aux autres pods
 
 spring:
   profiles:
     active: docker                      # Profil Spring actif
+
+# Configuration de la connexion pour Prometheus
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: monitoring
+  interval: 15s
+  scrapeTimeout: 10s
+  path: /actuator/prometheus
+  port: http

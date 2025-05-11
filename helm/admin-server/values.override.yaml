@@ -1,0 +1,21 @@
+# configuration pour le déploiement local dans minikube
+
+containerPort: 9090
+
+image:
+  repository: admin-server
+  tag: latest
+  pullPolicy: Never
+
+service:
+  port: 9090
+  portName: http
+
+serviceMonitor:
+  enabled: true
+  path: /actuator/prometheus
+  port: http
+  interval: 15s
+  scrapeTimeout: 10s
+  additionalLabels:
+    release: monitoring
