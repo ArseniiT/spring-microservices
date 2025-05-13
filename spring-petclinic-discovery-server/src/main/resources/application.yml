@@ -1,81 +1,37 @@
-# --------------------------------------------------
-# Profil local par défaut
-# --------------------------------------------------
 spring:
   application:
     name: discovery-server
   config:
-    import: optional:configserver:http://config-server:8888
-  profiles:
-    active: default
-
-logging:
-  level:
-    org:
-      springframework:
-        boot: INFO
-        web: INFO
-
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
+  cloud:
+    config:
+      fail-fast: false
+      
+server:
+  port: 8761
+  
 eureka:
-  client:
-    register-with-eureka: false
-    fetch-registry: false
   instance:
     hostname: localhost
-    prefer-ip-address: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"                    # expose tous les endpoints, y compris prometheus
-  endpoint:
-    health:
-      show-details: "always"          # affiche toujours les détails de la santé
-    prometheus:
-      enabled: true                    # active l’endpoint /actuator/prometheus
-  metrics:
-    export:
-      prometheus:
-        enabled: true                  # active l’export des métriques pour Prometheus
-
-server:
-  port: 8761                           # port d’écoute du service
-
----
-
-# --------------------------------------------------
-# Profil docker (Minikube / Kubernetes)
-# --------------------------------------------------
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: optional:configserver:http://config-server:8888
-  # ce profil est activé par la variable SPRING_PROFILES_ACTIVE=docker
-
-eureka:
   client:
-    register-with-eureka: false
-    fetch-registry: false
-  instance:
-    hostname: discovery-server
-    prefer-ip-address: true
-
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+      
 management:
   endpoints:
     web:
       exposure:
-        include: "*"                    # expose tous les endpoints, y compris prometheus
+        include: health,info,prometheus
   endpoint:
     health:
-      show-details: "always"          # affiche toujours les détails de la santé
+      show-details: always
     prometheus:
-      enabled: true                    # active l’endpoint /actuator/prometheus
+      enabled: true
   metrics:
     export:
       prometheus:
-        enabled: true                  # active l’export des métriques pour Prometheus
-
-server:
-  port: 8761                           # port d’écoute identique en mode Docker
+        enabled: true
+    tags:
+      application: ${spring.application.name}
