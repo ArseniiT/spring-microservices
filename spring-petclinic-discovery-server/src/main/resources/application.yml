@@ -28,19 +28,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"                    # expose tous les endpoints y compris prometheus
+        include: "*"                    # expose tous les endpoints, y compris prometheus
   endpoint:
     health:
-      show-details: "always"
+      show-details: "always"          # affiche toujours les détails de la santé
     prometheus:
-      enabled: true                    # active /actuator/prometheus
+      enabled: true                    # active l’endpoint /actuator/prometheus
   metrics:
     export:
       prometheus:
-        enabled: true                  # active l'export des métriques pour Prometheus
+        enabled: true                  # active l’export des métriques pour Prometheus
 
 server:
-  port: 8761
+  port: 8761                           # port d’écoute du service
 
 ---
 
@@ -52,7 +52,7 @@ spring:
     activate:
       on-profile: docker
     import: optional:configserver:http://config-server:8888
-  # (профиль активируется переменной SPRING_PROFILES_ACTIVE=docker)
+  # ce profil est activé par la variable SPRING_PROFILES_ACTIVE=docker
 
 eureka:
   client:
@@ -66,16 +66,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"                    # expose tous les endpoints y compris prometheus
+        include: "*"                    # expose tous les endpoints, y compris prometheus
   endpoint:
     health:
-      show-details: "always"
+      show-details: "always"          # affiche toujours les détails de la santé
     prometheus:
-      enabled: true                    # <— НЕОБХОДИМО: активируем Prometheus endpoint
+      enabled: true                    # active l’endpoint /actuator/prometheus
   metrics:
     export:
       prometheus:
-        enabled: true                  # <— НЕОБХОДИМО: включаем экспорт метрик
+        enabled: true                  # active l’export des métriques pour Prometheus
 
 server:
-  port: 8761
+  port: 8761                           # port d’écoute identique en mode Docker
