@@ -1,10 +1,8 @@
-# spring-petclinic-api-gateway/src/main/resources/application.yml
-
 spring:
   application:
     name: api-gateway
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+    import: optional:configserver:
   cloud:
     gateway:
       routes:
@@ -26,8 +24,22 @@ spring:
             - Path=/api/customer/**
           filters:
             - StripPrefix=2
-
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
+      defaultZone: 
+# Prometheus configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true

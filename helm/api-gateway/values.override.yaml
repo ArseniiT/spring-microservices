@@ -1,0 +1,25 @@
+# Docker
+image:
+  repository: api-gateway        # Nom logique de l'image (ici локальный образ pour Minikube)
+  tag: latest                    
+  pullPolicy: Never      # politique de récupération de l'image (IfNotPresent, Always, Never)
+replicaCount: 1                  # Nombre de pods souhaités
+containerPort: 8080              # Port exposé par le conteneur
+# service de Kubernetes
+service:
+  type: ClusterIP                # Type de service (ClusterIP, NodePort, LoadBalancer)
+  port: 80                       # Port service exposé aux autres pods
+  portName: http                 # nome du port (pour le ServiceMonitor)
+# profile de Spring
+spring:
+  profiles:
+    active: docker               # profile correspondant aux valeurs docker-compose/Helm
+# properties de ServiceMonitor pour Prometheus
+metrics:
+  serviceMonitor:
+    enabled: true                # Activer la collection de métriques
+    port: http                   # PortName à utiliser pour le scrape
+    interval: 15s                # Fréquence du scrape
+    scrapeTimeout: 10s           # Timeout pour le scrape
+    additionalLabels:            # des labels additionnels pour ServiceMonitor
+      release: monitoring

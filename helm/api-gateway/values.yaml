@@ -13,3 +13,11 @@ service:
 spring:
   profiles:
     active: docker                      # Profil Spring actif
+
+metrics:
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+    additionalLabels:
+      release: prometheus
