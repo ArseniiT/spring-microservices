@@ -1,3 +1,6 @@
+# --------------------------------------------------
+# Profil local par défaut
+# --------------------------------------------------
 spring:
   application:
     name: discovery-server
@@ -6,21 +9,12 @@ spring:
   profiles:
     active: default
 
-# Réduction des logs inutiles au démarrage
 logging:
   level:
     org:
       springframework:
         boot: INFO
         web: INFO
-
-# Profil par défaut pour exécution en local
----
-spring:
-  config:
-    activate:
-      on-profile: default
-    import: optional:configserver:http://config-server:8888
 
 eureka:
   client:
@@ -34,21 +28,31 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "*"                    # expose tous les endpoints y compris prometheus
   endpoint:
     health:
       show-details: "always"
+    prometheus:
+      enabled: true                    # active /actuator/prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true                  # active l'export des métriques pour Prometheus
 
 server:
   port: 8761
 
-# Profil utilisé en mode docker-compose
 ---
+
+# --------------------------------------------------
+# Profil docker (Minikube / Kubernetes)
+# --------------------------------------------------
 spring:
   config:
     activate:
       on-profile: docker
     import: optional:configserver:http://config-server:8888
+  # (профиль активируется переменной SPRING_PROFILES_ACTIVE=docker)
 
 eureka:
   client:
@@ -62,10 +66,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "*"                    # expose tous les endpoints y compris prometheus
   endpoint:
     health:
       show-details: "always"
+    prometheus:
+      enabled: true                    # <— НЕОБХОДИМО: активируем Prometheus endpoint
+  metrics:
+    export:
+      prometheus:
+        enabled: true                  # <— НЕОБХОДИМО: включаем экспорт метрик
 
 server:
   port: 8761

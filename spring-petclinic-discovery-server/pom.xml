@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.springframework.samples.petclinic.discovery</groupId>
@@ -21,7 +23,7 @@
         <jolokia-core.version>1.7.1</jolokia-core.version>
     </properties>
 
-        <dependencyManagement>
+    <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
@@ -44,7 +46,7 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Spring Boot -->
+        <!-- Spring Boot test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -61,41 +63,43 @@
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- JAXB is required since Java 9 -->
+        <!-- JAXB nécessaire depuis Java 9 -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
 
+        <!-- Actuator pour endpoints de supervision -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- <dependency>
-            <groupId>com.netflix.eureka</groupId>
-            <artifactId>eureka-client</artifactId>
-            <version>1.10.11</version>
-        </dependency> -->
+        <!-- Dépendance Micrometer pour exporter vers Prometheus -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
 
+        <!-- (facultatif) Chaos Monkey et Jolokia déjà dans dependencyManagement -->
     </dependencies>
-       <profiles>
+
+    <profiles>
         <profile>
             <id>springboot</id>
             <activation>
                 <file>
-                    <!-- Just a way to identify a Spring Boot application -->
                     <exists>src/main/resources/application.yml</exists>
                 </file>
             </activation>
             <build>
                 <plugins>
+                    <!-- Spring Boot Maven Plugin pour build-info -->
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <!-- Spring Boot Actuator displays build-related information if a META-INF/build-info.properties file is present -->
                                 <goals>
                                     <goal>build-info</goal>
                                 </goals>
@@ -109,8 +113,7 @@
                             </execution>
                         </executions>
                     </plugin>
-
-                    <!-- Spring Boot Actuator displays build-related information if a META-INF/build-info.properties file is present -->
+                    <!-- Git Commit ID Plugin -->
                     <plugin>
                         <groupId>io.github.git-commit-id</groupId>
                         <artifactId>git-commit-id-maven-plugin</artifactId>
@@ -134,5 +137,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>

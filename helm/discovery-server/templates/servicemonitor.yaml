@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: discovery-server-servicemonitor
+  namespace: monitoring
+  labels:
+    release: monitoring      
+spec:
+  selector:
+    matchLabels:
+      app: discovery-server
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+    - port: {{ .Values.service.portName }}
+      interval: 15s
+      path: /actuator/prometheus

@@ -1,0 +1,22 @@
+image:
+  repository: discovery-server
+  tag: latest
+  pullPolicy: Never
+
+containerPort: 8761
+service:
+  port: 8761
+  portName: http
+  type: ClusterIP
+
+spring:
+  profiles:
+    active: docker
+
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: docker
+  - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+    value: "health,info,prometheus"   # expose les endpoints health, info et prometheus
+  - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+    value: "true"                     # active l'endpoint prometheus

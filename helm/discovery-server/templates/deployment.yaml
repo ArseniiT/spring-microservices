@@ -17,6 +17,7 @@ spec:
       containers:
         - name: discovery-server
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
           env:
