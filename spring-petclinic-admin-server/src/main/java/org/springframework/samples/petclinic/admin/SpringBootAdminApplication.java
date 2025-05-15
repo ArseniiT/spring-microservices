@@ -16,6 +16,8 @@
 package org.springframework.samples.petclinic.admin;
 
 import de.codecentric.boot.admin.server.config.EnableAdminServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -23,8 +25,11 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 @EnableAdminServer
 @EnableDiscoveryClient
-public class SpringBootAdminApplication {
+public class SpringBootAdminApplication {    
+    private static final Logger logger = LoggerFactory.getLogger(SpringBootAdminApplication.class);
     public static void main(String[] args) {
+        logger.info("Démarrage de Spring Boot Admin Server avec Prometheus activé");
+        logger.info("Actuator endpoints exposés: management.endpoints.web.exposure.include=*");
         SpringApplication.run(SpringBootAdminApplication.class, args);
     }
 

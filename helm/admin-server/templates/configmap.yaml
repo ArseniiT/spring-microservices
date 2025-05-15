@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "admin-server.fullname" . }}-config
+  labels:
+    app: {{ include "admin-server.name" . }}
+    app.kubernetes.io/managed-by: Helm
+data:
+  application.yml: |
+    spring:
+      application:
+        name: admin-server
+      security:
+        user:
+          name: admin
+          password: admin
+      boot:
+        admin:
+          ui:
+            title: Spring Pet Clinic Admin
+            brand: <img src="assets/img/icon-spring-boot-admin.svg"><span>Pet Clinic Admin</span>
+    
+    server:
+      port: 8080
+    
+    eureka:
+      instance:
+        leaseRenewalIntervalInSeconds: 10
+        health-check-url-path: /actuator/health
+        metadata-map:
+          startup: ${random.int}
+      client:
+        registryFetchIntervalSeconds: 5
+        serviceUrl:
+          defaultZone: http://discovery-server-discovery-server.default.svc.cluster.local:8761/eureka/
+    
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: "*"
+      endpoint:
+        health:
+          show-details: ALWAYS
+        prometheus:
+          enabled: true
+      metrics:
+        export:
+          prometheus:
+            enabled: true

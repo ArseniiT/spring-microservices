@@ -1,24 +1,43 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "admin-server.fullname" . }}  # Nom du déploiement basé sur release + chart
+  name: {{ include "admin-server.fullname" . }}
+  labels:
+    app: {{ include "admin-server.name" . }}
 spec:
-  replicas: {{ .Values.replicaCount }}               # Nombre de pods souhaités
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "admin-server.name" . }}       # Utilisé pour associer les pods à ce déploiement
+      app: {{ include "admin-server.name" . }}
   template:
     metadata:
       labels:
-        app: {{ include "admin-server.name" . }}     # Label utilisé pour le service
+        app: {{ include "admin-server.name" . }}
     spec:
       containers:
         - name: admin-server
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           ports:
             - name: {{ .Values.service.portName | default "http" }}
-              containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
+              containerPort: {{ .Values.containerPort }}
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ .Values.spring.profiles.active | quote }}         # Profil Spring actif (ex: docker)
+              value: {{ .Values.spring.profiles.active | quote }}
+            - name: SPRING_CONFIG_IMPORT
+              value: "file:/config/application.yml"
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "*"
+            - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+              value: "true"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS
+              value: "ALWAYS"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "admin-server.fullname" . }}-config

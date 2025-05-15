@@ -1,26 +1,49 @@
-replicaCount: 1                         # Nombre de pods (réplicas)
+replicaCount: 1
 
 image:
-  repository: admin-server         # Nom logique de l'image (sera remplacé par le repo ECR via le fichier secret)
-  tag: latest                           # Tag de l’image Docker
+  repository: admin-server
+  tag: latest
+  pullPolicy: IfNotPresent
 
-containerPort: 8080                     # Port exposé par le conteneur
+nameOverride: ""
+fullnameOverride: ""
 
 service:
-  portName: ""
-  type: ClusterIP                       # Type de service Kubernetes
-  port: 80                              # Port du service exposé aux autres pods
+  type: ClusterIP
+  port: 80
+
+containerPort: 8080
+
+resources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
 
 spring:
   profiles:
-    active: docker                      # Profil Spring actif
+    active: default
+  application:
+    name: admin-server
 
-# Configuration de la connexion pour Prometheus
-serviceMonitor:
-  enabled: true
-  additionalLabels:
-    release: monitoring
-  interval: 15s
-  scrapeTimeout: 10s
-  path: /actuator/prometheus
-  port: http
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-server-discovery-server:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true

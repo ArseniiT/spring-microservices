@@ -1,16 +1,12 @@
 # configuration pour le déploiement local dans minikube
-
-containerPort: 9090
-
+containerPort: 8080
 image:
   repository: admin-server
   tag: latest
   pullPolicy: Never
-
 service:
-  port: 9090
+  port: 8080
   portName: http
-
 serviceMonitor:
   enabled: true
   path: /actuator/prometheus
