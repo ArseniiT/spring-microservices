@@ -1,12 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "api-gateway.fullname" . }}    # nom du service exposé
+  name: {{ include "api-gateway.fullname" . }}
+  labels:
+    app: {{ include "api-gateway.name" . }}
+    app.kubernetes.io/managed-by: Helm
 spec:
-  type: {{ .Values.service.type }}                # type de service (ClusterIP, NodePort, etc.)
+  type: {{ .Values.service.type }}
   selector:
-    app: {{ include "api-gateway.name" . }}       # cible les pods avec ce label
+    app: {{ include "api-gateway.name" . }}
   ports:
-    - protocol: TCP
-      port: {{ .Values.service.port }}            # port du service exposé
-      targetPort: {{ .Values.containerPort }}     # port interne dans le container
+    - name: http
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.containerPort }}

@@ -1,22 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "api-gateway.fullname" . }}  # nom du déploiement basé sur release + chart
+  name: {{ include "api-gateway.fullname" . }}
 spec:
-  replicas: {{ .Values.replicaCount }}          # nombre de pods souhaités
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "api-gateway.name" . }}   # utilisé pour associer les pods à ce déploiement
+      app: {{ include "api-gateway.name" . }}
   template:
     metadata:
       labels:
-        app: {{ include "api-gateway.name" . }} # label utilisé pour le service
+        app: {{ include "api-gateway.name" . }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
     spec:
       containers:
         - name: api-gateway
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # image Docker à déployer
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.containerPort }}                   # port exposé dans le container
+            - containerPort: {{ .Values.containerPort }}
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ .Values.spring.profiles.active | quote }}          # profil Spring actif (ex: docker)
+              value: {{ .Values.spring.profiles.active | quote }}
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "*"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS
+              value: "always"
+            - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+              value: "true"
+            - name: MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED
+              value: "true"
