@@ -16,7 +16,8 @@ spec:
         - name: {{ include "config-server.fullname" . }}-ecr-auth  # Secret d'authentification ECR
       containers:
         - name: config-server
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à 
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           ports:
             - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
           env:

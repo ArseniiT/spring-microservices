@@ -9,8 +9,9 @@ spring:
       server:
         git:
           uri: https://github.com/ArseniiT/spring-petclinic-microservices-config.git
-        native:
-          searchLocations: file:///${GIT_REPO}
+          searchPaths: .
+        # native:
+        #   searchLocations: file:///${GIT_REPO}
 
 eureka:
   client:

@@ -1,0 +1,18 @@
+image:
+  repository: config-server
+  tag: latest
+  pullPolicy: Never
+
+containerPort: 8888
+
+service:
+  port: 8888
+  portName: http
+  type: ClusterIP
+
+spring:
+  profiles:
+    active: native
+
+env: []
+
