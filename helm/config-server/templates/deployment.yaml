@@ -16,10 +16,14 @@ spec:
         - name: {{ include "config-server.fullname" . }}-ecr-auth  # Secret d'authentification ECR
       containers:
         - name: config-server
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à 
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           ports:
             - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.spring.profiles.active | quote }}         # Profil Spring actif (ex: docker)
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "*"                                                   # Activer tous les endpoints Actuator
+            - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+              value: "true"                                                # Activer l'endpoint Prometheus
