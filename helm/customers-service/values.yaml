@@ -13,3 +13,7 @@ service:
 spring:
   profiles:
     active: docker                      # Profil Spring actif
+
+useEcrAuth: false
+  # Si true, le secret d'authentification ECR sera utilisé pour tirer l'image depuis ECR
+  # Si false, l'image doit être accessible sans authentification (ex: Docker Hub public)

@@ -1,0 +1,19 @@
+containerPort: 8081
+
+image:
+  repository: customers-service
+  tag: latest
+  pullPolicy: Never
+
+service:
+  port: 8081
+  type: ClusterIP
+
+spring:
+  profiles:
+    active: docker
+
+serviceMonitor:
+  enabled: true
+
+useEcrAuth: false
