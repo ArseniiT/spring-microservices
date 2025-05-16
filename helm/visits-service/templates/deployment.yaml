@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "visits-service.fullname" . }}  # Nom du déploiement basé sur release + chart
+  labels:
+    app: {{ include "visits-service.name" . }}
 spec:
   replicas: {{ .Values.replicaCount }}               # Nombre de pods souhaités
   selector:
@@ -12,13 +14,23 @@ spec:
       labels:
         app: {{ include "visits-service.name" . }} # Label utilisé pour le service
     spec:
+      {{- if .Values.useEcrAuth }}
       imagePullSecrets:
         - name: {{ include "visits-service.fullname" . }}-ecr-auth  # Secret d'authentification ECR
+      {{- end }}
       containers:
         - name: visits-service
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Image Docker à déployer
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           ports:
             - containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
+              containerPort: {{ .Values.containerPort }}                   # Port exposé dans le container
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.spring.profiles.active | quote }}         # Profil Spring actif (ex: docker)
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.spring.profiles.active | quote }}
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "*"
+            - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+              value: "true"

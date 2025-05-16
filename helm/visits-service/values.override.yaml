@@ -1,0 +1,19 @@
+containerPort: 8083
+
+image:
+  repository: visits-service
+  tag: latest
+  pullPolicy: Never
+
+service:
+  port: 8083
+  type: ClusterIP
+
+spring:
+  profiles:
+    active: docker
+
+serviceMonitor:
+  enabled: true
+
+useEcrAuth: false

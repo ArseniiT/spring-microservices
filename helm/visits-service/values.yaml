@@ -8,8 +8,10 @@ containerPort: 8080                     # Port exposé par le conteneur
 
 service:
   type: ClusterIP                       # Type de service Kubernetes
-  port: 80                              # Port du service exposé aux autres pods
+  port: 8083                              # Port du service exposé aux autres pods
 
 spring:
   profiles:
     active: docker                      # Profil Spring actif
+
+useEcrAuth: false
