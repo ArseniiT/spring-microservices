@@ -1,0 +1,19 @@
+containerPort: 8082
+
+image:
+  repository: vets-service
+  tag: latest
+  pullPolicy: Never
+
+service:
+  port: 8082
+  type: ClusterIP
+
+spring:
+  profiles:
+    active: docker
+
+serviceMonitor:
+  enabled: true
+
+useEcrAuth: false

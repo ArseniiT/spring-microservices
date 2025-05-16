@@ -12,7 +12,19 @@ spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.tracing.zipkin.ZipkinAutoConfiguration
 
+server:
+  port: 8082
+
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true

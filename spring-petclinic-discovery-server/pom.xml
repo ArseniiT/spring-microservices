@@ -81,7 +81,6 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- (facultatif) Chaos Monkey et Jolokia déjà dans dependencyManagement -->
     </dependencies>
 
     <profiles>

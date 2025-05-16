@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "vets-service.fullname" . }}  # Nom du service exposé
+  labels:
+    app: {{ include "vets-service.name" . }}     # label utilisé pour le service
 spec:
   type: {{ .Values.service.type }}                    # Type de service (ClusterIP, NodePort, etc.)
   selector:
     app: {{ include "vets-service.name" . }}     # Cible les pods avec ce label
   ports:
-    - protocol: TCP
+    - name: {{ .Values.service.portName | default "http" }}                                 
+      protocol: TCP
       port: {{ .Values.service.port }}                # Port du service (ex: 80)
       targetPort: {{ .Values.containerPort }}         # Port interne dans le container
