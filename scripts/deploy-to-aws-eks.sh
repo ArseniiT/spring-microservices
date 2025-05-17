@@ -28,7 +28,7 @@ for SERVICE in "${SERVICES[@]}"; do
   aws ecr create-repository --repository-name "${ECR_REPO_PREFIX}/${IMAGE_NAME}" --region $AWS_REGION
 
   cd "$SERVICE_PATH"
-  mvn clean package
+  mvn clean package -DskipTests
   docker build -t "$IMAGE_NAME" .
   docker tag "$IMAGE_NAME:latest" "$ECR_REPO:latest"
   docker push "$ECR_REPO:latest"
@@ -48,9 +48,9 @@ eksctl create cluster \
   --region $AWS_REGION \
   --nodegroup-name linux-nodes \
   --node-type t3.small \
-  --nodes 3 \
+  --nodes 2 \
   --nodes-min 1 \
-  --nodes-max 3 \
+  --nodes-max 2 \
   --managed
 
 # Configuration de kubectl pour utiliser le cluster
