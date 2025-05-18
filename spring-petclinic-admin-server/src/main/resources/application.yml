@@ -24,3 +24,17 @@ management:
     export:
       prometheus:
         enabled: true
+
+# configuration d'exposition des métriques pour Prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
