@@ -95,7 +95,7 @@ argocd app set api-gateway --sync-policy none
 ```bash
 cd spring-petclinic-helm-charts
 ./apply-apps.sh
-argocd app sync api-gateway-app --local api-gateway --prune --force
+./sync-local.sh api-gateway-app api-gateway
 ```
 
 > Cela utilise le contenu local du dossier `api-gateway`, y compris `values.yaml` et `values.secret.yaml`.
