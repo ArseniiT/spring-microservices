@@ -47,3 +47,12 @@ management:
     export:
       prometheus:
         enabled: true
+
+serviceMonitor:
+  enabled: true
+  path: /actuator/prometheus
+  port: http
+  interval: 15s
+  scrapeTimeout: 10s
+  additionalLabels:
+    release: monitoring
