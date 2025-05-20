@@ -41,13 +41,15 @@ if [ -z "$EKSCTL_EXISTS" ]; then
   exit 1
 fi
 
-# Création du cluster EKS avec des instances t3.small
+# Création du cluster EKS
+# avec des instances t3.small if we don't use Prometheus
+# avec des instances t3.medium if we use Prometheus
 echo "Création du cluster EKS..."
 eksctl create cluster \
   --name $CLUSTER_NAME \
   --region $AWS_REGION \
   --nodegroup-name linux-nodes \
-  --node-type t3.small \
+  --node-type t3.medium \
   --nodes 3 \
   --nodes-min 1 \
   --nodes-max 3 \
