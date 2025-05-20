@@ -74,10 +74,12 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 ArgoCD ne publie pas d’interface par défaut. Il faut ouvrir un port local et s’y connecter :
 
 ```bash
-# 1. Ouvrir le port local
+# 1. Ouvrir le port local dans le nouveau terminal
 kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
 
-# 2. Récupérer le mot de passe admin et se connecter
+```bash
+# 2. Récupérer le mot de passe admin et se connecter dans le terminal où vous aler utiliser argocd
 argocd login localhost:8080   --username admin   --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)   --insecure
 ```
 
@@ -88,7 +90,7 @@ argocd login localhost:8080   --username admin   --password $(kubectl -n argocd 
 ### 5. Supprimer la synchronisation automatique dans ArgoCD (optionnel pour tests locaux)
 
 ```bash
-argocd app set <app-name> --sync-policy none
+argocd app set api-gateway --sync-policy none
 ```
 
 ---
@@ -97,6 +99,8 @@ argocd app set <app-name> --sync-policy none
 
 ```bash
 cd spring-petclinic-helm-charts
+
+./apply-apps.sh
 
 argocd app sync api-gateway-app   --local api-gateway   --prune --force
 ```
