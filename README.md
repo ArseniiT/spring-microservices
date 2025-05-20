@@ -27,8 +27,6 @@ cd projetpetclinicinitial/scripts
 ./deploy-to-aws-eks.sh
 ```
 
-> Ce script crée le cluster avec `eksctl` et met à jour le contexte `kubectl`.
-
 ---
 
 ### 2. Installer ArgoCD
@@ -50,9 +48,6 @@ Ensuite, déployez ArgoCD dans votre cluster EKS :
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
-
-> Cela installera tous les composants ArgoCD dans le cluster Kubernetes.
-
 
 ---
 
@@ -87,7 +82,7 @@ argocd login localhost:8080   --username admin   --password $(kubectl -n argocd 
 
 ---
 
-### 5. Supprimer la synchronisation automatique dans ArgoCD (optionnel pour tests locaux)
+### 5. Supprimer la synchronisation automatique dans ArgoCD  (optionnel pour tests locaux)
 
 ```bash
 argocd app set api-gateway --sync-policy none
@@ -99,10 +94,8 @@ argocd app set api-gateway --sync-policy none
 
 ```bash
 cd spring-petclinic-helm-charts
-
 ./apply-apps.sh
-
-argocd app sync api-gateway-app   --local api-gateway   --prune --force
+argocd app sync api-gateway-app --local api-gateway --prune --force
 ```
 
 > Cela utilise le contenu local du dossier `api-gateway`, y compris `values.yaml` et `values.secret.yaml`.
@@ -114,8 +107,6 @@ argocd app sync api-gateway-app   --local api-gateway   --prune --force
 ```bash
 kubectl get ingress -A
 ```
-
-> Vous devriez voir un DNS AWS attribué (champ `ADDRESS`) au `Ingress` correspondant.
 
 ---
 
@@ -136,8 +127,43 @@ cd ../projetpetclinicinitial/scripts
 curl https://greta25.click
 ```
 
-> Ou ouvrir dans le navigateur.
 ---
+
+### 10. Activer le monitoring avec Prometheus et Grafana
+
+Assurez-vous que vous avez le répertoire `spring-petclinic-helm-charts`
+
+Déployer les applications de monitoring via ArgoCD :
+
+```bash
+cd spring-petclinic-helm-charts/monitoring
+
+kubectl create namespace monitoring  # une seule fois
+
+argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
+
+argocd app create -f prometheus-app.yaml
+argocd app create -f grafana-app.yaml
+
+argocd app sync prometheus --force
+argocd app sync grafana --force
+```
+
+Une fois tous les pods prêts :
+
+```bash
+kubectl get pods -n monitoring
+```
+
+Accéder à Grafana :
+
+```bash
+kubectl port-forward svc/grafana -n monitoring 3000:80
+```
+
+Naviguez vers [http://localhost:3000](http://localhost:3000)  
+Login : `admin`  
+Mot de passe : `admin`
 
 ## Résolution des problèmes de `values.secret.yaml`
 
