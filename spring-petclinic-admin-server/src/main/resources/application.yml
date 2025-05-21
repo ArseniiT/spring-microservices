@@ -19,6 +19,8 @@ server:
 
 # configuration d'exposition des métriques pour Prometheus
 management:
+  server:
+    port: 9090
   endpoints:
     web:
       exposure:
@@ -30,4 +32,5 @@ management:
     export:
       prometheus:
         enabled: true
+
 
