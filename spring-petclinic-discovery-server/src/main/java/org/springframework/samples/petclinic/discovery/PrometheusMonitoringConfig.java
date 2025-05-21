@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * Cette classe permet d'exposer les métriques du Discovery Server via l'endpoint /actuator/prometheus
  */
 @Configuration
-public class PrometheusConfig {
+public class PrometheusMonitoringConfig {
 
     @Bean
     public PrometheusMeterRegistry prometheusMeterRegistry(PrometheusConfig config, CollectorRegistry collectorRegistry, Clock clock) {
