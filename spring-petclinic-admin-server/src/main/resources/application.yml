@@ -5,8 +5,8 @@ server:
 spring:
   application:
     name: admin-server
-  config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  # config:
+  #   import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
   boot:
     admin:
       client:
@@ -29,3 +29,8 @@ management:
     export:
       prometheus:
         enabled: true
+
+logging:
+  level:
+    org.springframework.boot.actuate.endpoint.web: DEBUG
+    org.springframework.boot.actuate.endpoint: DEBUG
