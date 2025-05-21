@@ -165,6 +165,38 @@ Naviguez vers [http://localhost:3000](http://localhost:3000)
 Login : `admin`  
 Mot de passe : `admin`
 
+
+### 10bis. Redéploiement Prometheus sur AWS EKS (problème de CRD)
+
+Si Prometheus ne se déploie pas correctement à cause de conflits ou erreurs de CRD (par exemple, erreur `metadata.annotations: Too long`), suivre les étapes suivantes :
+
+```bash
+cd spring-petclinic-helm-charts/monitoring
+
+# Supprimer les anciennes applications si elles sont en échec
+argocd app delete prometheus --yes
+
+# Appliquer manuellement les CRDs nécessaires
+kubectl create -f crds/crd-prometheuses.yaml
+kubectl create -f crds/crd-prometheusagents.yaml
+
+# (optionnel) Vérifier que les CRDs sont bien installés
+kubectl get crd | grep prometheus
+
+# Recréer l'application Prometheus dans ArgoCD
+kubectl apply -f prometheus-app.yaml
+
+# Synchroniser manuellement via ArgoCD
+argocd app sync prometheus
+```
+
+Lorsque tous les pods sont prêts, accéder à Prometheus en local via port forwarding :
+```bash
+kubectl port-forward svc/prometheus-prometheus -n monitoring 9090:9090
+```
+
+Ensuite, accéder à l'interface web de Prometheus ici : [http://localhost:9090](http://localhost:9090)
+
 ## Résolution des problèmes de `values.secret.yaml`
 
 Le flag `--values` **n’est pas supporté** directement dans `argocd app sync`. Au lieu de cela :
