@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY target/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 9090
 
 # Variable d'environnement pour le serveur Eureka
 ENV EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
