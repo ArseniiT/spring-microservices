@@ -13,12 +13,16 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
 
+server:
+  port: 9090
+  address: 0.0.0.0
+
 # configuration d'exposition des métriques pour Prometheus
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info,prometheus
   endpoint:
     prometheus:
       enabled: true
@@ -26,3 +30,4 @@ management:
     export:
       prometheus:
         enabled: true
+
