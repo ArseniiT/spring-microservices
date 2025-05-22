@@ -17,11 +17,20 @@ server:
 spring.boot.admin.client.url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://admin-server:9090}
 spring.boot.admin.client.instance.prefer-ip: true
 
+# Prometheus configuration
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info,prometheus
   endpoint:
+    health:
+      show-details: always
     prometheus:
       enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}

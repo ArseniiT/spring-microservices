@@ -20,11 +20,20 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
 
+# Prometheus configuration
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info,prometheus
   endpoint:
+    health:
+      show-details: always
     prometheus:
       enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
