@@ -74,7 +74,7 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 ```bash
-# 2. Récupérer le mot de passe admin et se connecter dans le terminal où vous aler utiliser argocd
+# 2. Récupérer le mot de passe admin et se connecter dans le terminal où vous allez utiliser argocd
 argocd login localhost:8080   --username admin   --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)   --insecure
 ```
 
@@ -129,17 +129,23 @@ curl https://greta25.click
 
 ---
 
-### 10. Activer le monitoring avec Prometheus et Grafana
+### 10. Installer les CRDs nécessaires pour Prometheus (obligatoire)
 
-Assurez-vous que vous avez le répertoire `spring-petclinic-helm-charts`
-
-Déployer les applications de monitoring via ArgoCD :
+Avant de créer l'application Prometheus dans ArgoCD, il faut appliquer manuellement les CRDs :
 
 ```bash
 cd spring-petclinic-helm-charts/monitoring
+kubectl create -f crds/crd-prometheuses.yaml
+kubectl create -f crds/crd-prometheusagents.yaml
+kubectl create -f crds/crd-servicemonitors.yaml
+kubectl create -f crds/crd-podmonitors.yaml
+```
 
-kubectl create namespace monitoring  # une seule fois
+---
 
+### 11. Déployer Prometheus et Grafana avec ArgoCD
+
+```bash
 argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
 
 argocd app create -f prometheus-app.yaml
@@ -149,7 +155,7 @@ argocd app sync prometheus --force
 argocd app sync grafana --force
 ```
 
-Une fois tous les pods prêts :
+Vérifier que les pods sont prêts :
 
 ```bash
 kubectl get pods -n monitoring
@@ -161,41 +167,11 @@ Accéder à Grafana :
 kubectl port-forward svc/grafana -n monitoring 3000:80
 ```
 
-Naviguez vers [http://localhost:3000](http://localhost:3000)  
+Interface : http://localhost:3000  
 Login : `admin`  
 Mot de passe : `admin`
 
-
-### 10bis. Redéploiement Prometheus sur AWS EKS (problème de CRD)
-
-Si Prometheus ne se déploie pas correctement à cause de conflits ou erreurs de CRD (par exemple, erreur `metadata.annotations: Too long`), suivre les étapes suivantes :
-
-```bash
-cd spring-petclinic-helm-charts/monitoring
-
-# Supprimer les anciennes applications si elles sont en échec
-argocd app delete prometheus --yes
-
-# Appliquer manuellement les CRDs nécessaires
-kubectl create -f crds/crd-prometheuses.yaml
-kubectl create -f crds/crd-prometheusagents.yaml
-
-# (optionnel) Vérifier que les CRDs sont bien installés
-kubectl get crd | grep prometheus
-
-# Recréer l'application Prometheus dans ArgoCD
-kubectl apply -f prometheus-app.yaml
-
-# Synchroniser manuellement via ArgoCD
-argocd app sync prometheus
-```
-
-Lorsque tous les pods sont prêts, accéder à Prometheus en local via port forwarding :
-```bash
-kubectl port-forward svc/prometheus-prometheus -n monitoring 9090:9090
-```
-
-Ensuite, accéder à l'interface web de Prometheus ici : [http://localhost:9090](http://localhost:9090)
+---
 
 ## Résolution des problèmes de `values.secret.yaml`
 
