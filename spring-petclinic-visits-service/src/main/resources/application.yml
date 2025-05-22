@@ -12,7 +12,7 @@ eureka:
       defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
 
 server:
-  port: 8083
+  port: 8082
 
 spring.boot.admin.client.url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://admin-server:9090}
 spring.boot.admin.client.instance.prefer-ip: true
