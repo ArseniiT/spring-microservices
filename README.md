@@ -75,9 +75,13 @@ kubectl apply -f spring-petclinic-helm-charts/monitoring/crds/crd-podmonitors.ya
 ### 5. Connexion à ArgoCD localement
 
 ```bash
+# 1. Ouvrir le port local dans le nouveau terminal
 kubectl port-forward svc/argocd-server -n argocd 8080:443
-argocd login localhost:8080   --username admin   --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)   --insecure
 ```
+
+```bash
+# 2. Récupérer le mot de passe admin et se connecter dans le terminal où vous aler utiliser argocd
+argocd login localhost:8080   --username admin   --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)   --insecure
 
 ---
 
