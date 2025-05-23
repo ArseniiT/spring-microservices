@@ -135,6 +135,13 @@ argocd app sync prometheus --force
 argocd app sync grafana --force
 ```
 
+Accéder à Prometheus :
+
+```bash
+kubectl port-forward svc/prometheus-prometheus -n monitoring 9090:9090
+# Interface: http://localhost:9090
+```
+
 Accéder à Grafana :
 
 ```bash
