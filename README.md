@@ -147,6 +147,16 @@ kubectl create -f crds/crd-prometheuses.yaml
 kubectl apply -f monitoring/prometheus.yaml
 ```
 
+## Appliquer les fichiers Prometheus manuellement
+
+Après la synchronisation initiale, appliquez manuellement le fichier `Service` Prometheus si nécessaire :
+
+```bash
+kubectl apply -f monitoring/prometheus.yaml
+kubectl apply -f monitoring/prometheus/service.yaml
+```
+
+
 ---
 
 ### 11. Synchroniser tous les services en une seule commande
