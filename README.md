@@ -126,6 +126,7 @@ curl https://greta25.click
 ```bash
 cd ~/stage/spring-petclinic-helm-charts
 argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
+argocd repo add https://github.com/ArseniiT/spring-petclinic-helm-charts.git --type git
 kubectl create namespace monitoring
 ```
 
@@ -161,7 +162,7 @@ kubectl apply -f monitoring/prometheus.yaml
 ### Accéder à Prometheus
 
 ```bash
-kubectl port-forward svc/prometheus-operated -n monitoring 9090:9090
+kubectl port-forward svc/prometheus-prometheus -n monitoring 9090:9090
 # Interface Web : http://localhost:9090
 ```
 
