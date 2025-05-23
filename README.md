@@ -69,11 +69,6 @@ kubectl apply -f spring-petclinic-helm-charts/monitoring/crds/crd-servicemonitor
 kubectl apply -f spring-petclinic-helm-charts/monitoring/crds/crd-podmonitors.yaml
 ```
 
-#### CRDs pour External Secrets
-
-```bash
-kubectl apply -f projetpetclinicinitial/infra/secrets/crds/externalsecret-crds.yaml
-```
 
 ---
 
