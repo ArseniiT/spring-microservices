@@ -127,6 +127,7 @@ curl https://greta25.click
 ```bash
 cd ~/stage/spring-petclinic-helm-charts
 argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
+kubectl create namespace monitoring
 argocd app create -f monitoring/prometheus-app.yaml
 argocd app create -f monitoring/grafana-app.yaml
 
