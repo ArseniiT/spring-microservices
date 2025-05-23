@@ -70,7 +70,6 @@ kubectl create -f crds/crd-servicemonitors.yaml
 kubectl create -f crds/crd-podmonitors.yaml
 ```
 
-
 ---
 
 ### 5. Connexion à ArgoCD localement
@@ -91,8 +90,8 @@ argocd login localhost:8080   --username admin   --password $(kubectl -n argocd 
 
 ```bash
 cd ~/stage/spring-petclinic-helm-charts
-./apply-apps.sh
-./sync-local.sh api-gateway-app api-gateway
+./scripts/apply-apps.sh
+./scripts/sync-local.sh api-gateway-app api-gateway
 ```
 
 ---
@@ -156,6 +155,16 @@ kubectl delete crd prometheuses.monitoring.coreos.com
 kubectl create -f crds/crd-prometheuses.yaml
 kubectl apply -f monitoring/prometheus.yaml
 ```
+
+---
+
+### 11. Synchroniser tous les services en une seule commande
+
+```bash
+./scripts/sync-all-services.sh
+# Cela va synchroniser tous les microservices définis dans les fichiers -app.yaml
+```
+
 
 ---
 
