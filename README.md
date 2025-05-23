@@ -60,7 +60,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 
 ### 4. Installer les CRDs nécessaires
 
-#### CRDs pour Prometheus
+#### Installation des CRDs Prometheus (manuellement, avec `create` pour éviter les erreurs d’annotation trop longues)
 
 ```bash
 cd ~/stage/spring-petclinic-helm-charts/monitoring
@@ -127,16 +127,6 @@ curl https://greta25.click
 cd ~/stage/spring-petclinic-helm-charts
 argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
 kubectl create namespace monitoring
-```
-
-#### Installation des CRDs Prometheus (manuellement, avec `create` pour éviter les erreurs d’annotation trop longues)
-
-```bash
-cd monitoring
-kubectl create -f crds/crd-prometheuses.yaml
-kubectl create -f crds/crd-servicemonitors.yaml
-kubectl create -f crds/crd-podmonitors.yaml
-kubectl create -f crds/crd-prometheusagents.yaml || true  # peut échouer à cause de l'annotation trop longue
 ```
 
 #### Appliquer les applications ArgoCD
