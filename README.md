@@ -63,11 +63,11 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 #### CRDs pour Prometheus
 
 ```bash
-cd ~/stage/spring-petclinic-helm-charts
-kubectl apply -f /monitoring/crds/crd-prometheuses.yaml
-kubectl apply -f /monitoring/crds/crd-prometheusagents.yaml
-kubectl apply -f /monitoring/crds/crd-servicemonitors.yaml
-kubectl apply -f /monitoring/crds/crd-podmonitors.yaml
+cd ~/stage/spring-petclinic-helm-charts/monitoring
+kubectl create -f crds/crd-prometheuses.yaml
+kubectl create -f crds/crd-prometheusagents.yaml
+kubectl create -f crds/crd-servicemonitors.yaml
+kubectl create -f crds/crd-podmonitors.yaml
 ```
 
 
