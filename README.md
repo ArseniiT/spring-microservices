@@ -63,10 +63,11 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 #### CRDs pour Prometheus
 
 ```bash
-kubectl apply -f spring-petclinic-helm-charts/monitoring/crds/crd-prometheuses.yaml
-kubectl apply -f spring-petclinic-helm-charts/monitoring/crds/crd-prometheusagents.yaml
-kubectl apply -f spring-petclinic-helm-charts/monitoring/crds/crd-servicemonitors.yaml
-kubectl apply -f spring-petclinic-helm-charts/monitoring/crds/crd-podmonitors.yaml
+cd ~/stage/spring-petclinic-helm-charts
+kubectl apply -f /monitoring/crds/crd-prometheuses.yaml
+kubectl apply -f /monitoring/crds/crd-prometheusagents.yaml
+kubectl apply -f /monitoring/crds/crd-servicemonitors.yaml
+kubectl apply -f /monitoring/crds/crd-podmonitors.yaml
 ```
 
 
@@ -89,7 +90,7 @@ argocd login localhost:8080   --username admin   --password $(kubectl -n argocd 
 ### 6. Appliquer les applications ArgoCD localement
 
 ```bash
-cd spring-petclinic-helm-charts
+cd ~/stage/spring-petclinic-helm-charts
 ./apply-apps.sh
 ./sync-local.sh api-gateway-app api-gateway
 ```
@@ -124,6 +125,7 @@ curl https://greta25.click
 ### 10. Déployer Prometheus et Grafana
 
 ```bash
+cd ~/stage/spring-petclinic-helm-charts
 argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
 argocd app create -f monitoring/prometheus-app.yaml
 argocd app create -f monitoring/grafana-app.yaml
