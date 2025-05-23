@@ -128,25 +128,49 @@ curl https://greta25.click
 cd ~/stage/spring-petclinic-helm-charts
 argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
 kubectl create namespace monitoring
+```
+
+#### Installation des CRDs Prometheus (manuellement, avec `create` pour éviter les erreurs d’annotation trop longues)
+
+```bash
+cd monitoring
+kubectl create -f crds/crd-prometheuses.yaml
+kubectl create -f crds/crd-servicemonitors.yaml
+kubectl create -f crds/crd-podmonitors.yaml
+kubectl create -f crds/crd-prometheusagents.yaml || true  # peut échouer à cause de l'annotation trop longue
+```
+
+#### Appliquer les applications ArgoCD
+
+```bash
 argocd app create -f monitoring/prometheus-app.yaml
 argocd app create -f monitoring/grafana-app.yaml
-
 argocd app sync prometheus --force
 argocd app sync grafana --force
 ```
 
-Accéder à Prometheus :
+#### Si l’objet Prometheus n’est pas créé automatiquement (erreur "no matches for kind Prometheus") :
 
 ```bash
-kubectl port-forward svc/prometheus-prometheus -n monitoring 9090:9090
-# Interface: http://localhost:9090
+kubectl delete crd prometheuses.monitoring.coreos.com
+kubectl create -f crds/crd-prometheuses.yaml
+kubectl apply -f monitoring/prometheus.yaml
 ```
 
-Accéder à Grafana :
+---
+
+### Accéder à Prometheus
+
+```bash
+kubectl port-forward svc/prometheus-operated -n monitoring 9090:9090
+# Interface Web : http://localhost:9090
+```
+
+### Accéder à Grafana
 
 ```bash
 kubectl port-forward svc/grafana -n monitoring 3000:80
-# Interface: http://localhost:3000, login: admin / admin
+# Interface Web : http://localhost:3000, login: admin / admin
 ```
 
 ---
