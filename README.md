@@ -145,7 +145,7 @@ argocd app sync grafana --force
 
 ```bash
 kubectl delete crd prometheuses.monitoring.coreos.com
-kubectl create -f crds/crd-prometheuses.yaml
+kubectl create -f monitoring/crds/crd-prometheuses.yaml
 kubectl apply -f monitoring/prometheus.yaml
 ```
 
