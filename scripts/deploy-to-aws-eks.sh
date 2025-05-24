@@ -11,6 +11,11 @@ LOCAL_PROJECT_PATH="$ROOT_DIR"
 # Récupérer automatiquement l'identifiant du compte AWS
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
+if [ -z "$AWS_ACCOUNT_ID" ]; then
+  echo "Erreur: Impossible de récupérer l'identifiant du compte AWS. Vérifie la connexion AWS CLI."
+  exit 1
+fi
+
 # Connexion à Amazon ECR
 echo "Connexion à ECR..."
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
