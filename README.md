@@ -136,6 +136,8 @@ kubectl create namespace monitoring
 argocd app create -f monitoring/prometheus-app.yaml
 argocd app create -f monitoring/grafana-app.yaml
 argocd app sync prometheus --force
+kubectl wait --for=condition=Ready pods -l app.kubernetes.io/name=prometheus -n monitoring --timeout=180s
+
 argocd app sync grafana --force
 ```
 
