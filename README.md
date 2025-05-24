@@ -149,15 +149,14 @@ kubectl create -f crds/crd-prometheuses.yaml
 kubectl apply -f monitoring/prometheus.yaml
 ```
 
-## Appliquer les fichiers Prometheus manuellement
-
-Après la synchronisation initiale, appliquez manuellement le fichier `Service` Prometheus si nécessaire :
+**Note** : Le fichier `service.yaml` dans `monitoring/prometheus` est optionnel et n'est pas requis si vous utilisez le Helm chart officiel `kube-prometheus-stack`. Pour accéder à Prometheus, utilisez le service généré automatiquement par Helm :
 
 ```bash
-kubectl apply -f monitoring/prometheus.yaml
-kubectl apply -f monitoring/prometheus/service.yaml
+kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 9090:9090
+# Interface Web : http://localhost:9090
 ```
 
+Ne créez **pas** manuellement le fichier `monitoring/prometheus/service.yaml` dans ce cas.
 
 ---
 
@@ -165,18 +164,9 @@ kubectl apply -f monitoring/prometheus/service.yaml
 
 ```bash
 ./scripts/sync-all-services.sh
-# Cela va synchroniser tous les microservices définis dans les fichiers -app.yaml
 ```
-
 
 ---
-
-### Accéder à Prometheus
-
-```bash
-kubectl port-forward svc/prometheus-prometheus -n monitoring 9090:9090
-# Interface Web : http://localhost:9090
-```
 
 ### Accéder à Grafana
 
