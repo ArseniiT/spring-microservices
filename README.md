@@ -128,14 +128,16 @@ curl https://greta25.click
 
 ## Étapes d'installation du monitoring
 
-### 1 Créer les CRDs manuellement (important pour éviter l'erreur "Too long annotations")
+### 1. Créer les CRDs manuellement (important pour éviter l'erreur "Too long annotations")
 
 ```bash
 cd ~/stage/spring-petclinic-helm-charts
 kubectl create -f monitoring/kube-prometheus-stack/charts/crds/crds/
 ```
 
-### 2 Déployer Prometheus et Grafana via ArgoCD
+**Note**: Les erreurs "AlreadyExists" sont normales si les CRDs sont déjà installés.
+
+### 2. Déployer Prometheus et Grafana via ArgoCD
 
 Créer l'application ArgoCD `prometheus` :
 
@@ -144,33 +146,32 @@ cd ~/stage/spring-petclinic-helm-charts
 kubectl apply -f monitoring/prometheus-app.yaml
 ```
 
-Synchroniser l'application :
+### 3. Attendre le déploiement complet
+
+Le déploiement peut prendre plusieurs minutes. Vérifier le statut :
 
 ```bash
-argocd app sync prometheus --force
-```
-
-Si l'erreur "another operation is already in progress" apparaît, exécuter :
-
-```bash
-argocd app terminate-op prometheus
-argocd app sync prometheus --force
-```
-
-### 3 Vérifier le déploiement
-
-```bash
+# Vérifier les pods
 kubectl get pods -n monitoring
+
+# Vérifier les services
 kubectl get svc -n monitoring
+
+# Tous les pods doivent être en état "Running"
 ```
 
-#### 4 Prometheus
+### 4. Accéder aux interfaces de monitoring
+
+#### Prometheus
 
 ```bash
-kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+kubectl port-forward -n monitoring svc/prometheus-prometheus 9090:9090
 ```
 
 Accéder à Prometheus via http://localhost:9090
+
+- **Status → Targets** : pour voir tous les services découverts
+- **Graph** : pour créer des requêtes de métriques
 
 #### Grafana
 
@@ -180,18 +181,70 @@ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
 
 Accéder à Grafana via http://localhost:3000
 
-Login par défaut : `admin`
-Mot de passe : récupérer avec :
+- **Login** : `admin`
+- **Mot de passe** : `admin` (configuré dans prometheus-app.yaml)
+
+### 5. Vérifier la collecte des métriques des microservices
 
 ```bash
-kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d
+# Vérifier que les ServiceMonitors sont créés
+kubectl get servicemonitors -A
+
+# Dans Prometheus (http://localhost:9090):
+# - Aller dans Status → Targets
+# - Chercher les targets avec les noms de vos microservices :
+#   * discovery-server
+#   * api-gateway
+#   * config-server
+#   * customers-service
+#   * vets-service
+#   * visits-service
+#   * admin-server
 ```
 
-## Bonnes pratiques
+### 6. Configuration automatique
 
-- Ne jamais modifier manuellement les CRDs déjà installés
-- Pour les valeurs personnalisées, utiliser le fichier `monitoring/prometheus/values.yaml` et le référencer dans `prometheus-app.yaml`
-- Si des erreurs CRD persistent, supprimer tous les CRDs et refaire l'étape 3
+Les microservices sont configurés pour exposer les métriques via :
+- **Endpoint** : `/actuator/prometheus`
+- **ServiceMonitors** : automatiquement créés par les Helm charts
+- **Labels** : `release: prometheus` pour la découverte automatique
+
+## Dépannage
+
+### Si ArgoCD indique "operation in progress"
+
+```bash
+# Attendre que l'opération se termine (peut prendre 5-10 minutes)
+# Ou forcer l'arrêt si elle est bloquée :
+argocd app terminate-op prometheus
+argocd app sync prometheus --force
+```
+
+### Si les services ne sont pas découverts
+
+```bash
+# Vérifier la configuration Prometheus
+kubectl get prometheus -n monitoring -o yaml
+
+# Vérifier les ServiceMonitors
+kubectl get servicemonitors -A -o yaml
+```
+
+### Si Grafana ne démarre pas
+
+```bash
+# Vérifier les logs
+kubectl logs -n monitoring deployment/prometheus-grafana
+
+# Redémarrer si nécessaire
+kubectl rollout restart deployment/prometheus-grafana -n monitoring
+```
+
+## Dashboards Grafana recommandés
+
+1. **Kubernetes Cluster Monitoring** (ID: 315)
+2. **Spring Boot Actuator** (ID: 12900)
+3. **JVM Micrometer** (ID: 4701)
 
 ## Nettoyage
 
