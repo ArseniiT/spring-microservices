@@ -123,40 +123,83 @@ curl https://greta25.click
 
 ### 10. Déployer Prometheus et Grafana
 
+## Prérequis
+
+- Cluster EKS opérationnel
+- ArgoCD installé et accessible
+- AWS CLI et kubectl configurés
+
+## Étapes d'installation du monitoring
+
+### 1 Créer les CRDs manuellement (important pour éviter l'erreur "Too long annotations")
+
 ```bash
-cd ~/stage/spring-petclinic-helm-charts
-argocd repo add https://prometheus-community.github.io/helm-charts --type helm --name prometheus-community
-argocd repo add https://github.com/ArseniiT/spring-petclinic-helm-charts.git --type git
-kubectl create namespace monitoring
+kubectl create -f monitoring/kube-prometheus-stack/charts/crds/crds/
 ```
 
-#### Appliquer les applications ArgoCD
+### 2 Déployer Prometheus et Grafana via ArgoCD
+
+Créer l'application ArgoCD `prometheus` :
 
 ```bash
-argocd app create -f monitoring/prometheus-app.yaml
-argocd app create -f monitoring/grafana-app.yaml
+kubectl apply -f monitoring/prometheus-app.yaml
+```
+
+Synchroniser l'application :
+
+```bash
 argocd app sync prometheus --force
-kubectl wait --for=condition=Ready pods -l app.kubernetes.io/name=prometheus -n monitoring --timeout=180s
-
-argocd app sync grafana --force
 ```
 
-#### Si l’objet Prometheus n’est pas créé automatiquement (erreur "no matches for kind Prometheus") :
+Si l'erreur "another operation is already in progress" apparaît, exécuter :
 
 ```bash
-kubectl delete crd prometheuses.monitoring.coreos.com
-kubectl create -f monitoring/crds/crd-prometheuses.yaml
-kubectl apply -f monitoring/prometheus.yaml
+argocd app terminate-op prometheus
+argocd app sync prometheus --force
 ```
 
-**Note** : Le fichier `service.yaml` dans `monitoring/prometheus` est optionnel et n'est pas requis si vous utilisez le Helm chart officiel `kube-prometheus-stack`. Pour accéder à Prometheus, utilisez le service généré automatiquement par Helm :
+### 3 Vérifier le déploiement
 
 ```bash
-kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 9090:9090
-# Interface Web : http://localhost:9090
+kubectl get pods -n monitoring
+kubectl get svc -n monitoring
 ```
 
-Ne créez **pas** manuellement le fichier `monitoring/prometheus/service.yaml` dans ce cas.
+#### 4 Prometheus
+
+```bash
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+```
+
+Accéder à Prometheus via http://localhost:9090
+
+#### Grafana
+
+```bash
+kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+```
+
+Accéder à Grafana via http://localhost:3000
+
+Login par défaut : `admin`
+Mot de passe : récupérer avec :
+
+```bash
+kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d
+```
+
+## Bonnes pratiques
+
+- Ne jamais modifier manuellement les CRDs déjà installés
+- Pour les valeurs personnalisées, utiliser le fichier `monitoring/prometheus/values.yaml` et le référencer dans `prometheus-app.yaml`
+- Si des erreurs CRD persistent, supprimer tous les CRDs et refaire l'étape 3
+
+## Nettoyage
+
+```bash
+kubectl delete -f monitoring/prometheus-app.yaml
+kubectl delete namespace monitoring
+```
 
 ---
 
