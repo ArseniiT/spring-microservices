@@ -63,11 +63,8 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 #### Installation des CRDs Prometheus (manuellement, avec `create` pour éviter les erreurs d’annotation trop longues)
 
 ```bash
-cd ~/stage/spring-petclinic-helm-charts/monitoring
-kubectl create -f crds/crd-prometheuses.yaml
-kubectl create -f crds/crd-prometheusagents.yaml
-kubectl create -f crds/crd-servicemonitors.yaml
-kubectl create -f crds/crd-podmonitors.yaml
+cd ~/stage/spring-petclinic-helm-charts
+kubectl create -f monitoring/kube-prometheus-stack/charts/crds/crds/
 ```
 
 ---
