@@ -131,6 +131,7 @@ curl https://greta25.click
 ### 1 Créer les CRDs manuellement (important pour éviter l'erreur "Too long annotations")
 
 ```bash
+cd ~/stage/spring-petclinic-helm-charts
 kubectl create -f monitoring/kube-prometheus-stack/charts/crds/crds/
 ```
 
@@ -139,6 +140,7 @@ kubectl create -f monitoring/kube-prometheus-stack/charts/crds/crds/
 Créer l'application ArgoCD `prometheus` :
 
 ```bash
+cd ~/stage/spring-petclinic-helm-charts
 kubectl apply -f monitoring/prometheus-app.yaml
 ```
 
