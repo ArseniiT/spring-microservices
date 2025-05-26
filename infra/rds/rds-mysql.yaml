@@ -13,12 +13,18 @@ Parameters:
     Default: "db.t3.micro"
   VPCSecurityGroupId:
     Type: String
-  DBMasterUsername:
+  VPCId:
     Type: String
-  DBMasterUserPassword:
-    Type: String
+  DBSubnetIds:
+    Type: CommaDelimitedList
 
 Resources:
+  MyDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Subnet group for RDS"
+      SubnetIds: !Ref DBSubnetIds
+
   MyDBInstance:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -32,6 +38,7 @@ Resources:
       DBName: !Ref DBName
       VPCSecurityGroups:
         - !Ref VPCSecurityGroupId
+      DBSubnetGroupName: !Ref MyDBSubnetGroup
       PubliclyAccessible: false
       BackupRetentionPeriod: 0
 
