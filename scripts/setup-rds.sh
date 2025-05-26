@@ -89,12 +89,12 @@ get_subnets() {
         --output text \
         --region $AWS_REGION)
     
-    # Si pas de sous-réseaux privés tagués, prendre tous les sous-réseaux du VPC
+    # Si pas de sous-réseaux privés tagués, prendre seulement 2 sous-réseaux du VPC dans des AZ différentes
     if [ -z "$PRIVATE_SUBNETS" ]; then
-        echo "Aucun sous-réseau privé tagué trouvé, utilisation de tous les sous-réseaux du VPC"
+        echo "Aucun sous-réseau privé tagué trouvé, sélection de 2 sous-réseaux dans des AZ différentes"
         SUBNET_IDS=$(aws ec2 describe-subnets \
             --filters "Name=vpc-id,Values=$VPC_ID" \
-            --query 'Subnets[*].SubnetId' \
+            --query 'Subnets[0:2].SubnetId' \
             --output text \
             --region $AWS_REGION)
     else
