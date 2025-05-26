@@ -47,17 +47,15 @@ if [ -z "$EKSCTL_EXISTS" ]; then
 fi
 
 # Création du cluster EKS
-# min 2 instances t3.small si nous n'utilisons pas Prometheus
-# min 3 instances t3.medium si nous utilisons Prometheus
 echo "Création du cluster EKS..."
 eksctl create cluster \
   --name $CLUSTER_NAME \
   --region $AWS_REGION \
   --nodegroup-name linux-nodes \
-  --node-type t3.small \
-  --nodes 2 \
+  --node-type t3.medium \
+  --nodes 3 \
   --nodes-min 1 \
-  --nodes-max 2 \
+  --nodes-max 3 \
   --managed
 
 # Configuration de kubectl pour utiliser le cluster

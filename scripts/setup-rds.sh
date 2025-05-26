@@ -12,14 +12,12 @@ echo "=== Démarrage du déploiement RDS pour Petclinic ==="
 get_eks_cluster_info() {
     echo "Récupération des informations du cluster EKS..."
     
-    # Vérifier que le cluster existe
     aws eks describe-cluster --name $CLUSTER_NAME --region $AWS_REGION > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "Erreur: Le cluster EKS '$CLUSTER_NAME' n'existe pas dans la région $AWS_REGION"
         exit 1
     fi
     
-    # Récupérer le VPC ID via le cluster EKS
     VPC_ID=$(aws eks describe-cluster \
         --name $CLUSTER_NAME \
         --query 'cluster.resourcesVpcConfig.vpcId' \
@@ -38,7 +36,6 @@ get_eks_cluster_info() {
 get_node_security_group() {
     echo "Recherche du Security Group des worker nodes..."
     
-    # Méthode 1: Via les tags du cluster
     SG_ID=$(aws ec2 describe-security-groups \
         --filters "Name=tag:aws:eks:cluster-name,Values=$CLUSTER_NAME" \
                   "Name=group-name,Values=*nodegroup*" \
@@ -46,7 +43,6 @@ get_node_security_group() {
         --output text \
         --region $AWS_REGION)
     
-    # Méthode 2: Si la première méthode échoue, chercher avec eksctl pattern
     if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
         echo "Recherche avec le pattern eksctl..."
         SG_ID=$(aws ec2 describe-security-groups \
@@ -56,7 +52,6 @@ get_node_security_group() {
             --region $AWS_REGION)
     fi
     
-    # Méthode 3: Rechercher tous les SG du VPC avec les tags EKS
     if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
         echo "Recherche dans tous les Security Groups du VPC..."
         SG_ID=$(aws ec2 describe-security-groups \
@@ -69,53 +64,57 @@ get_node_security_group() {
     
     if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
         echo "Erreur: Impossible de trouver le Security Group des worker nodes EKS"
-        echo "Vérifiez que le cluster EKS est correctement configuré avec des worker nodes"
         exit 1
     fi
     
     echo "Security Group ID trouvé: $SG_ID"
 }
 
-# Fonction pour récupérer les sous-réseaux
+# Fonction pour récupérer les sous-réseaux dans différentes AZ
 get_subnets() {
     echo "Récupération des sous-réseaux du VPC..."
-    
-    # Récupérer les sous-réseaux privés (recommandé pour RDS)
-    PRIVATE_SUBNETS=$(aws ec2 describe-subnets \
+
+    # Récupérer tous les subnets disponibles dans le VPC, avec leur AZ
+    MAP_SUBNETS=$(aws ec2 describe-subnets \
         --filters "Name=vpc-id,Values=$VPC_ID" \
-                  "Name=tag:aws:eks:cluster-name,Values=$CLUSTER_NAME" \
-                  "Name=tag:kubernetes.io/role/internal-elb,Values=1" \
-        --query 'Subnets[*].SubnetId' \
+        --query 'Subnets[*].[SubnetId,AvailabilityZone]' \
         --output text \
         --region $AWS_REGION)
-    
-    # Si pas de sous-réseaux privés tagués, prendre seulement 2 sous-réseaux du VPC dans des AZ différentes
-    if [ -z "$PRIVATE_SUBNETS" ]; then
-        echo "Aucun sous-réseau privé tagué trouvé, sélection de 2 sous-réseaux dans des AZ différentes"
-        SUBNET_IDS=$(aws ec2 describe-subnets \
-            --filters "Name=vpc-id,Values=$VPC_ID" \
-            --query 'Subnets[0:2].SubnetId' \
-            --output text \
-            --region $AWS_REGION)
-    else
-        SUBNET_IDS=$PRIVATE_SUBNETS
-    fi
-    
-    if [ -z "$SUBNET_IDS" ]; then
+
+    if [ -z "$MAP_SUBNETS" ]; then
         echo "Erreur: Aucun sous-réseau trouvé dans le VPC"
         exit 1
     fi
-    
-    # Convertir en format CSV pour CloudFormation
-    SUBNET_IDS_CSV=$(echo $SUBNET_IDS | tr ' ' ',')
+
+    # Choisir 2 subnets dans des AZ différentes
+    SUBNET1=""
+    SUBNET2=""
+    AZ1=""
+    AZ2=""
+
+    while read SUBNET_ID AZ; do
+        if [ -z "$SUBNET1" ]; then
+            SUBNET1=$SUBNET_ID
+            AZ1=$AZ
+        elif [ "$AZ" != "$AZ1" ]; then
+            SUBNET2=$SUBNET_ID
+            AZ2=$AZ
+            break
+        fi
+    done <<< "$MAP_SUBNETS"
+
+    if [ -z "$SUBNET1" ] || [ -z "$SUBNET2" ]; then
+        echo "Erreur: Impossible de trouver deux sous-réseaux dans des AZ différentes"
+        exit 1
+    fi
+
+    SUBNET_IDS_CSV="$SUBNET1,$SUBNET2"
     echo "Sous-réseaux trouvés: $SUBNET_IDS_CSV"
 }
 
-# Fonction pour récupérer les credentials DB depuis Secrets Manager
 get_db_credentials() {
     echo "Récupération des identifiants de base de données..."
     
-    # Récupérer le secret complet
     SECRET_JSON=$(aws secretsmanager get-secret-value \
         --secret-id $SECRET_NAME \
         --query SecretString \
@@ -127,7 +126,6 @@ get_db_credentials() {
         exit 1
     fi
     
-    # Extraire les valeurs
     DB_USER=$(echo $SECRET_JSON | jq -r '.db_user // empty')
     DB_PASSWORD=$(echo $SECRET_JSON | jq -r '.db_password // empty')
     
@@ -140,7 +138,6 @@ get_db_credentials() {
     echo "Identifiants DB récupérés avec succès"
 }
 
-# Fonction pour déployer RDS via CloudFormation
 deploy_rds() {
     echo "Déploiement de l'instance RDS MySQL..."
     
@@ -165,7 +162,6 @@ deploy_rds() {
     echo "Stack CloudFormation déployée avec succès"
 }
 
-# Fonction pour récupérer l'endpoint RDS et mettre à jour le secret
 update_secret_with_endpoint() {
     echo "Récupération de l'endpoint RDS..."
     
@@ -182,12 +178,10 @@ update_secret_with_endpoint() {
     
     echo "Endpoint RDS: $DB_ENDPOINT"
     
-    # Mettre à jour le secret avec l'endpoint et le nom de DB
     echo "Mise à jour du secret avec l'endpoint RDS..."
     
     TEMP_FILE=$(mktemp)
     
-    # Récupérer le secret actuel et ajouter db_host et db_name
     echo $SECRET_JSON | jq \
         --arg endpoint "$DB_ENDPOINT" \
         --arg dbname "petclinic" \
@@ -203,7 +197,6 @@ update_secret_with_endpoint() {
     echo "Secret mis à jour avec l'endpoint RDS et le nom de la base de données"
 }
 
-# Fonction principale
 main() {
     echo "=== Configuration RDS pour Spring Petclinic ==="
     
@@ -229,5 +222,4 @@ main() {
     echo "- DB_PASSWORD: (depuis le secret)"
 }
 
-# Exécution du script principal
 main
