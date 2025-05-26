@@ -74,4 +74,4 @@ echo "Mot de passe initial pour ArgoCD :"
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d && echo
 
 # Lancer le script de configuration RDS
-./scripts/setup-rds.sh
+./setup-rds.sh
