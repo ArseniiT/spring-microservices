@@ -69,6 +69,10 @@ echo "Installation de ArgoCD..."
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+# Рécupération du mot de passe administrateur
+echo "Attente 30 secondes pour que le secret soit créé..."
+sleep 30
+
 # Récupération du mot de passe administrateur
 echo "Mot de passe initial pour ArgoCD :"
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d && echo
