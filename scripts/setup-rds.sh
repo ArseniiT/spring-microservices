@@ -4,15 +4,16 @@ AWS_REGION="eu-west-3"
 CLUSTER_NAME="petclinic-cluster"
 STACK_NAME="petclinic-rds"
 SECRET_NAME="dockerhub-credentials"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)" 
 
 echo "Récupération du SecurityGroup ID pour EKS..."
 SG_ID=$(aws ec2 describe-security-groups \
-  --filters Name=group-name,Values=eksctl-${CLUSTER_NAME}-nodegroup-* \
+  --filters "Name=tag:aws:eks:cluster-name,Values=${CLUSTER_NAME}" \
   --query 'SecurityGroups[0].GroupId' \
   --output text \
   --region $AWS_REGION)
 
-if [ -z "$SG_ID" ]; then
+if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
   echo "Erreur: Impossible de récupérer le SecurityGroup ID."
   exit 1
 fi
@@ -22,7 +23,7 @@ echo "SecurityGroup ID: $SG_ID"
 echo "Déploiement de RDS via CloudFormation..."
 aws cloudformation deploy \
   --stack-name $STACK_NAME \
-  --template-file infra/rds/rds-mysql.yaml \
+  --template-file $ROOT_DIR/infra/rds/rds-mysql.yaml \
   --region $AWS_REGION \
   --parameter-overrides VPCSecurityGroupId=$SG_ID
 
@@ -32,7 +33,7 @@ DB_ENDPOINT=$(aws cloudformation describe-stacks \
   --query "Stacks[0].Outputs[?OutputKey=='RDSInstanceEndpoint'].OutputValue" \
   --output text)
 
-if [ -z "$DB_ENDPOINT" ]; then
+if [ -z "$DB_ENDPOINT" ] || [ "$DB_ENDPOINT" == "None" ]; then
   echo "Erreur: Impossible de récupérer l'endpoint RDS."
   exit 1
 fi
