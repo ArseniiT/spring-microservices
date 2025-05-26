@@ -7,12 +7,12 @@ SECRET_NAME="dockerhub-credentials"
 
 echo "Récupération du SecurityGroup ID pour EKS..."
 SG_ID=$(aws ec2 describe-security-groups \
-  --filters Name=group-name,Values=eksctl-${CLUSTER_NAME}-nodegroup-* \
+  --filters Name=tag:aws:eks:cluster-name,Values=$CLUSTER_NAME \
   --query 'SecurityGroups[0].GroupId' \
   --output text \
   --region $AWS_REGION)
 
-if [ -z "$SG_ID" ]; then
+if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
   echo "Erreur: Impossible de récupérer le SecurityGroup ID."
   exit 1
 fi
@@ -26,7 +26,7 @@ VPC_ID=$(aws ec2 describe-vpcs \
   --output text \
   --region $AWS_REGION)
 
-if [ -z "$VPC_ID" ]; then
+if [ -z "$VPC_ID" ] || [ "$VPC_ID" == "None" ]; then
   echo "Erreur: Impossible de récupérer le VPC ID."
   exit 1
 fi
