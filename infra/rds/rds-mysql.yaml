@@ -13,6 +13,10 @@ Parameters:
     Default: "db.t3.micro"
   VPCSecurityGroupId:
     Type: String
+  DBMasterUsername:
+    Type: String
+  DBMasterUserPassword:
+    Type: String
 
 Resources:
   MyDBInstance:
@@ -23,8 +27,8 @@ Resources:
       DBInstanceClass: !Ref DBInstanceClass
       Engine: mysql
       EngineVersion: "8.0"
-      MasterUsername: !Ref "AWS::NoValue"
-      MasterUserPassword: !Ref "AWS::NoValue"
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterUserPassword
       DBName: !Ref DBName
       VPCSecurityGroups:
         - !Ref VPCSecurityGroupId
