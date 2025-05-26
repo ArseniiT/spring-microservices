@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "RDS MySQL for Petclinic"
+
+Parameters:
+  DBInstanceIdentifier:
+    Type: String
+    Default: "petclinic-db"
+  DBName:
+    Type: String
+    Default: "petclinic"
+  DBInstanceClass:
+    Type: String
+    Default: "db.t3.micro"
+  VPCSecurityGroupId:
+    Type: String
+
+Resources:
+  MyDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      AllocatedStorage: 20
+      DBInstanceClass: !Ref DBInstanceClass
+      Engine: mysql
+      EngineVersion: "8.0"
+      MasterUsername: !Ref "AWS::NoValue"
+      MasterUserPassword: !Ref "AWS::NoValue"
+      DBName: !Ref DBName
+      VPCSecurityGroups:
+        - !Ref VPCSecurityGroupId
+      PubliclyAccessible: false
+      BackupRetentionPeriod: 0
+
+Outputs:
+  RDSInstanceEndpoint:
+    Value: !GetAtt MyDBInstance.Endpoint.Address
