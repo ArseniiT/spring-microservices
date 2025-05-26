@@ -51,4 +51,7 @@ for SERVICE in "${SERVICES[@]}"; do
   aws ecr delete-repository --repository-name "$REPO_NAME" --region $AWS_REGION --force
 done
 
+# Supprimer RDS
+aws cloudformation delete-stack --stack-name petclinic-rds --region eu-west-3
+
 echo " Tous les dépôts et images ECR ont été supprimés."
