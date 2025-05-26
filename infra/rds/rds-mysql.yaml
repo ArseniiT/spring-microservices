@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "RDS MySQL pour l'application Petclinic - Base de données partagée pour tous les microservices"
+Description: "RDS MySQL pour l'application Petclinic - Base de donnees partagee pour tous les microservices"
 
 Parameters:
   DBInstanceIdentifier:
@@ -10,37 +10,37 @@ Parameters:
   DBName:
     Type: String
     Default: "petclinic"
-    Description: "Nom de la base de données principale"
+    Description: "Nom de la base de donnees principale"
     
   DBInstanceClass:
     Type: String
     Default: "db.t3.micro"
-    Description: "Classe d'instance RDS (optimisée pour les coûts de formation)"
+    Description: "Classe d'instance RDS (optimisee pour les couts de formation)"
     
   DBMasterUsername:
     Type: String
     NoEcho: true
-    Description: "Nom d'utilisateur principal pour la base de données"
+    Description: "Nom d'utilisateur principal pour la base de donnees"
     
   DBMasterUserPassword:
     Type: String
     NoEcho: true
-    Description: "Mot de passe principal pour la base de données"
+    Description: "Mot de passe principal pour la base de donnees"
     
   VPCSecurityGroupId:
     Type: String
-    Description: "ID du Security Group pour autoriser l'accès depuis EKS"
+    Description: "ID du Security Group pour autoriser l'acces depuis EKS"
     
   VPCId:
     Type: String
-    Description: "ID du VPC où déployer RDS"
+    Description: "ID du VPC ou deployer RDS"
     
   DBSubnetIds:
     Type: CommaDelimitedList
-    Description: "Liste des sous-réseaux pour le groupe de sous-réseaux RDS"
+    Description: "Liste des sous-reseaux pour le groupe de sous-reseaux RDS"
 
 Resources:
-  # Groupe de sous-réseaux pour RDS (requis pour le déploiement dans un VPC)
+  # Groupe de sous-reseaux pour RDS (requis pour le deploiement dans un VPC)
   PetclinicDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
@@ -55,12 +55,12 @@ Resources:
         - Key: Environment
           Value: "Development"
 
-  # Security Group spécifique pour RDS
+  # Security Group specifique pour RDS
   PetclinicDBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: "petclinic-rds-sg"
-      GroupDescription: "Security Group pour la base de données RDS Petclinic"
+      GroupDescription: "Security Group pour la base de donnees RDS Petclinic"
       VpcId: !Ref VPCId
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -119,7 +119,7 @@ Outputs:
       Name: !Sub "${AWS::StackName}-RDS-Port"
       
   DatabaseName:
-    Description: "Nom de la base de données"
+    Description: "Nom de la base de donnees"
     Value: !Ref DBName
     Export:
       Name: !Sub "${AWS::StackName}-DB-Name"
