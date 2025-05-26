@@ -1,47 +1,125 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "RDS MySQL for Petclinic"
+Description: "RDS MySQL pour l'application Petclinic - Base de données partagée pour tous les microservices"
 
 Parameters:
   DBInstanceIdentifier:
     Type: String
     Default: "petclinic-db"
+    Description: "Identifiant unique de l'instance RDS"
+    
   DBName:
     Type: String
     Default: "petclinic"
+    Description: "Nom de la base de données principale"
+    
   DBInstanceClass:
     Type: String
     Default: "db.t3.micro"
+    Description: "Classe d'instance RDS (optimisée pour les coûts de formation)"
+    
+  DBMasterUsername:
+    Type: String
+    NoEcho: true
+    Description: "Nom d'utilisateur principal pour la base de données"
+    
+  DBMasterUserPassword:
+    Type: String
+    NoEcho: true
+    Description: "Mot de passe principal pour la base de données"
+    
   VPCSecurityGroupId:
     Type: String
+    Description: "ID du Security Group pour autoriser l'accès depuis EKS"
+    
   VPCId:
     Type: String
+    Description: "ID du VPC où déployer RDS"
+    
   DBSubnetIds:
     Type: CommaDelimitedList
+    Description: "Liste des sous-réseaux pour le groupe de sous-réseaux RDS"
 
 Resources:
-  MyDBSubnetGroup:
+  # Groupe de sous-réseaux pour RDS (requis pour le déploiement dans un VPC)
+  PetclinicDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: "Subnet group for RDS"
+      DBSubnetGroupName: "petclinic-db-subnet-group"
+      DBSubnetGroupDescription: "Groupe de sous-reseaux pour la base de donnees Petclinic"
       SubnetIds: !Ref DBSubnetIds
+      Tags:
+        - Key: Name
+          Value: "petclinic-db-subnet-group"
+        - Key: Project
+          Value: "Petclinic-DevOps-Stage"
+        - Key: Environment
+          Value: "Development"
 
-  MyDBInstance:
+  # Security Group spécifique pour RDS
+  PetclinicDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "petclinic-rds-sg"
+      GroupDescription: "Security Group pour la base de données RDS Petclinic"
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref VPCSecurityGroupId
+          Description: "Acces MySQL depuis les nodes EKS"
+      Tags:
+        - Key: Name
+          Value: "petclinic-rds-sg"
+        - Key: Project
+          Value: "Petclinic-DevOps-Stage"
+
+  # Instance RDS MySQL
+  PetclinicDBInstance:
     Type: AWS::RDS::DBInstance
     Properties:
       DBInstanceIdentifier: !Ref DBInstanceIdentifier
       AllocatedStorage: 20
       DBInstanceClass: !Ref DBInstanceClass
       Engine: mysql
-      EngineVersion: "8.0"
+      EngineVersion: "8.0.35"
       MasterUsername: !Ref DBMasterUsername
       MasterUserPassword: !Ref DBMasterUserPassword
       DBName: !Ref DBName
       VPCSecurityGroups:
-        - !Ref VPCSecurityGroupId
-      DBSubnetGroupName: !Ref MyDBSubnetGroup
+        - !Ref PetclinicDBSecurityGroup
+      DBSubnetGroupName: !Ref PetclinicDBSubnetGroup
       PubliclyAccessible: false
-      BackupRetentionPeriod: 0
+      BackupRetentionPeriod: 1
+      PreferredBackupWindow: "03:00-04:00"
+      PreferredMaintenanceWindow: "sun:04:00-sun:05:00"
+      StorageType: "gp2"
+      StorageEncrypted: true
+      MultiAZ: false
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: "petclinic-mysql-db"
+        - Key: Project
+          Value: "Petclinic-DevOps-Stage"
+        - Key: Environment
+          Value: "Development"
 
 Outputs:
   RDSInstanceEndpoint:
-    Value: !GetAtt MyDBInstance.Endpoint.Address
+    Description: "Endpoint de l'instance RDS MySQL"
+    Value: !GetAtt PetclinicDBInstance.Endpoint.Address
+    Export:
+      Name: !Sub "${AWS::StackName}-RDS-Endpoint"
+      
+  RDSInstancePort:
+    Description: "Port de l'instance RDS MySQL"
+    Value: !GetAtt PetclinicDBInstance.Endpoint.Port
+    Export:
+      Name: !Sub "${AWS::StackName}-RDS-Port"
+      
+  DatabaseName:
+    Description: "Nom de la base de données"
+    Value: !Ref DBName
+    Export:
+      Name: !Sub "${AWS::StackName}-DB-Name"
