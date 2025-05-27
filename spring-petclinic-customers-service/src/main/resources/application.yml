@@ -5,6 +5,10 @@ spring:
     name: customers-service
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/customers?useSSL=false&serverTimezone=UTC
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
 
 eureka:
   client:
@@ -31,9 +35,3 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
-
-spring:
-  datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/customers?useSSL=false&serverTimezone=UTC
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
