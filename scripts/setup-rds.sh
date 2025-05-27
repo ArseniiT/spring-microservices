@@ -197,6 +197,39 @@ update_secret_with_endpoint() {
     echo "Secret mis à jour avec l'endpoint RDS et le nom de la base de données"
 }
 
+create_k8s_secret() {
+    echo "Création/mise à jour du secret Kubernetes dockerhub-credentials..."
+
+    SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query SecretString --output text --region $AWS_REGION)
+
+    DB_HOST=$(echo $SECRET_JSON | jq -r '.db_host')
+    DB_PORT=$(echo $SECRET_JSON | jq -r '.db_port')
+    DB_USER=$(echo $SECRET_JSON | jq -r '.db_user')
+    DB_PASSWORD=$(echo $SECRET_JSON | jq -r '.db_password')
+    DB_NAME=$(echo $SECRET_JSON | jq -r '.db_name')
+    DOCKER_USERNAME=$(echo $SECRET_JSON | jq -r '.username')
+    DOCKER_PASSWORD=$(echo $SECRET_JSON | jq -r '.password')
+    CERTIFICATE_ARN=$(echo $SECRET_JSON | jq -r '.certificateArn')
+    DOMAIN_NAME=$(echo $SECRET_JSON | jq -r '.domainName')
+
+    # Supprimer le secret existant s'il existe
+    kubectl delete secret dockerhub-credentials --ignore-not-found
+
+    # Créer le secret mis à jour
+    kubectl create secret generic dockerhub-credentials \
+      --from-literal=username="$DOCKER_USERNAME" \
+      --from-literal=password="$DOCKER_PASSWORD" \
+      --from-literal=db_host="$DB_HOST" \
+      --from-literal=db_port="$DB_PORT" \
+      --from-literal=db_user="$DB_USER" \
+      --from-literal=db_password="$DB_PASSWORD" \
+      --from-literal=db_name="$DB_NAME" \
+      --from-literal=certificateArn="$CERTIFICATE_ARN" \
+      --from-literal=domainName="$DOMAIN_NAME"
+
+    echo " Secret Kubernetes dockerhub-credentials créé/mis à jour avec succès."
+}
+
 main() {
     echo "=== Configuration RDS pour Spring Petclinic ==="
     
@@ -206,13 +239,14 @@ main() {
     get_db_credentials
     deploy_rds
     update_secret_with_endpoint
+    create_k8s_secret
     
     echo ""
     echo "=== Déploiement RDS terminé avec succès ==="
     echo "Endpoint RDS: $DB_ENDPOINT"
     echo "Base de données: petclinic"
     echo "Port: 3306"
-    echo "Le secret '$SECRET_NAME' a été mis à jour avec les informations de connexion"
+    echo "Le secret '$SECRET_NAME' a été mis à jour dans AWS Secrets Manager et dans Kubernetes"
     echo ""
     echo "Les microservices peuvent maintenant utiliser ces variables d'environnement:"
     echo "- DB_HOST: $DB_ENDPOINT"
