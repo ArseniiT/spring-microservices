@@ -58,7 +58,21 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 
 ---
 
-### 4. Installer les CRDs nécessaires
+### 4. Lancer la configuration RDS
+
+```bash
+cd ~/stage/projetpetclinicinitial/scripts
+./setup-rds.sh
+```
+
+### 5. Synchroniser tous les services via ArgoCD
+
+```bash
+cd ~/stage/spring-petclinic-helm-charts
+./scripts/sync-all-services.sh
+```
+
+### 6. Installer les CRDs nécessaires
 
 #### Installation des CRDs Prometheus (manuellement, avec `create` pour éviter les erreurs d’annotation trop longues)
 
@@ -69,7 +83,7 @@ kubectl create -f monitoring/kube-prometheus-stack/charts/crds/crds/
 
 ---
 
-### 5. Connexion à ArgoCD localement
+### 7. Connexion à ArgoCD localement
 
 ```bash
 # 1. Ouvrir le port local dans le nouveau terminal
@@ -83,7 +97,7 @@ argocd login localhost:8080   --username admin   --password $(kubectl -n argocd 
 
 ---
 
-### 6. Appliquer les applications ArgoCD localement
+### 8. Appliquer les applications ArgoCD localement
 
 ```bash
 cd ~/stage/spring-petclinic-helm-charts
@@ -93,7 +107,7 @@ cd ~/stage/spring-petclinic-helm-charts
 
 ---
 
-### 7. Vérifier le LoadBalancer (ALB)
+### 9. Vérifier le LoadBalancer (ALB)
 
 ```bash
 kubectl get ingress -A
@@ -101,7 +115,7 @@ kubectl get ingress -A
 
 ---
 
-### 8. Mettre à jour le DNS via Route 53
+### 10. Mettre à jour le DNS via Route 53
 
 ```bash
 cd ../projetpetclinicinitial/scripts
@@ -110,15 +124,16 @@ cd ../projetpetclinicinitial/scripts
 
 ---
 
-### 9. Accéder à l’application via HTTPS
+### 11. Accéder à l’application via HTTPS
 
+```bash
 ```bash
 curl https://greta25.click
 ```
 
 ---
 
-### 10. Déployer Prometheus et Grafana
+### 12. Déployer Prometheus et Grafana
 
 ## Prérequis
 
