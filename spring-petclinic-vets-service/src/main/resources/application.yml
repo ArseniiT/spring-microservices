@@ -15,6 +15,12 @@ spring:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/vets?useSSL=false&serverTimezone=UTC
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://admin-server:9090}
+        instance:
+          prefer-ip: true
 
 server:
   port: 8082
