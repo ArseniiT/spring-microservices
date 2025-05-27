@@ -1,5 +1,4 @@
-# spring-petclinic-vets-service/src/main/resources/application.yml
-
+# Configuration pour le service vets-service
 spring:
   application:
     name: vets-service
@@ -7,30 +6,41 @@ spring:
     active: docker
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:petclinic}?useSSL=false&serverTimezone=UTC
+    username: ${DB_USER:petclinic}
+    password: ${DB_PASSWORD:petclinic}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
   cache:
     cache-names: vets
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.tracing.zipkin.ZipkinAutoConfiguration
-  datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/vets?useSSL=false&serverTimezone=UTC
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
   boot:
     admin:
       client:
         url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://admin-server:9090}
         instance:
-          prefer-ip: true
+          prefer-ip: ${SPRING_BOOT_ADMIN_CLIENT_PREFER_IP:true}
 
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}
 
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://discovery-server:8761/eureka}
+  instance:
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:false}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:vets-service}
 
-# Prometheus configuration
 management:
   endpoints:
     web:
@@ -47,3 +57,13 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
+  tracing:
+    enabled: ${MANAGEMENT_TRACING_ENABLED:false}
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:}
+
+logging:
+  level:
+    org.springframework.samples.petclinic: INFO
+    org.hibernate.SQL: WARN
