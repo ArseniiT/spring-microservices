@@ -10,6 +10,8 @@ spring:
         git:
           uri: https://github.com/ArseniiT/spring-petclinic-microservices-config.git
           searchPaths: .
+          default-label: main # branch name
+          force-pull: true 
         # native:
         #   searchLocations: file:///${GIT_REPO}
 
