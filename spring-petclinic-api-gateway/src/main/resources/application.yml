@@ -15,7 +15,7 @@ spring:
         instance:
           prefer-ip: true
   
-  # Configuration Spring Cloud Gateway (pas Zuul)
+  # Configuration Spring Cloud Gateway
   cloud:
     gateway:
       discovery:
@@ -84,15 +84,23 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
-
-# Desactivation de Zipkin par defaut  
+  # Desactivation complete de Zipkin et tracing
   tracing:
     enabled: false
-    zipkin:
+  zipkin:
+    tracing:
       endpoint: ""
+    
+# Desactivation Zipkin au niveau Spring Boot
+  sleuth:
+    enabled: false
+    zipkin:
+      enabled: false
 
 # Logging pour debug
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty: DEBUG
+    org.springframework.cloud.gateway: INFO
+    reactor.netty: INFO
+    zipkin2: OFF
+    brave: OFF
