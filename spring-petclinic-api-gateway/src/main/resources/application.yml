@@ -1,12 +1,35 @@
+# spring-petclinic-api-gateway/src/main/resources/application.yml
+server:
+  port: 8080
+  shutdown: graceful
+
 spring:
   application:
     name: api-gateway
   config:
-    import: "optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}"
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://admin-server:9091}
+        instance:
+          prefer-ip: true
+  
+  # Configuration Spring Cloud Gateway (pas Zuul)
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
       routes:
-        - id: vets-service
+        - id: customers-service
+          uri: lb://customers-service
+          predicates:
+            - Path=/api/customer/**
+          filters:
+            - StripPrefix=2
+        - id: vets-service  
           uri: lb://vets-service
           predicates:
             - Path=/api/vet/**
@@ -18,26 +41,42 @@ spring:
             - Path=/api/visit/**
           filters:
             - StripPrefix=2
-        - id: customers-service
-          uri: lb://customers-service
-          predicates:
-            - Path=/api/customer/**
-          filters:
-            - StripPrefix=2
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+
+# Configuration Eureka
 eureka:
   client:
     service-url:
-      defaultZone: 
-# Prometheus configuration
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://discovery-server:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    hostname: api-gateway
+    prefer-ip-address: false
+    non-secure-port: 8080
+
+# Configuration des metriques Prometheus
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,gateway
   endpoint:
     health:
       show-details: always
     prometheus:
+      enabled: true
+    gateway:
       enabled: true
   metrics:
     export:
@@ -45,3 +84,15 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
+
+# Desactivation de Zipkin par defaut  
+  tracing:
+    enabled: false
+    zipkin:
+      endpoint: ""
+
+# Logging pour debug
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
