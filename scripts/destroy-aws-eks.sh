@@ -19,9 +19,9 @@ echo "- Load Balancers, Target Groups, NAT Gateways, Internet Gateways"
 echo "- Security Groups et VPC non-default"
 echo "- Tous les stacks CloudFormation liés"
 echo ""
-read -p "Es-tu absolument sûr de vouloir continuer ? (tapez 'SUPPRIMER' pour confirmer) : " CONFIRM
+read -p "Es-tu absolument sûr de vouloir continuer ? (tapez 'Y' pour confirmer) : " CONFIRM
 
-if [[ "$CONFIRM" != "SUPPRIMER" ]]; then
+if [[ "$CONFIRM" != "Y" ]]; then
   echo "Opération annulée."
   exit 0
 fi

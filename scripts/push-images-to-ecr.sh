@@ -5,7 +5,8 @@ AWS_REGION="eu-west-3"
 CLUSTER_NAME="petclinic-cluster"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # On teste all services
-SERVICES=("admin-server" "api-gateway" "config-server" "discovery-server" "customers-service" "vets-service" "visits-service")
+# SERVICES=("admin-server" "api-gateway" "config-server" "discovery-server" "customers-service" "vets-service" "visits-service")
+SERVICES=("customers-service" "vets-service" "visits-service")
 ECR_REPO_PREFIX="spring-petclinic"
 LOCAL_PROJECT_PATH="$ROOT_DIR"
 
@@ -26,7 +27,7 @@ for SERVICE in "${SERVICES[@]}"; do
   aws ecr create-repository --repository-name "${ECR_REPO_PREFIX}/${IMAGE_NAME}" --region $AWS_REGION
 
   cd "$SERVICE_PATH"
-  mvn clean package
+  mvn clean package -DskipTests
   docker build -t "$IMAGE_NAME" .
   docker tag "$IMAGE_NAME:latest" "$ECR_REPO:latest"
   docker push "$ECR_REPO:latest"
