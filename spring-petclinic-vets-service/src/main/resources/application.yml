@@ -13,7 +13,7 @@ spring:
   jpa:
     hibernate:
       # ddl-auto: validate
-      ddl-auto: uodate
+      ddl-auto: update
     show-sql: false
     database-platform: org.hibernate.dialect.MySQL8Dialect
   sql:
