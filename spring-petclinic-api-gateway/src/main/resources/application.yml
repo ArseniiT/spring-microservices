@@ -6,6 +6,8 @@ server:
 spring:
   application:
     name: api-gateway
+  profiles:
+    active: default
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
   boot:
@@ -23,24 +25,26 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        - id: customers-service
+        - id: customers-route
           uri: lb://customers-service
           predicates:
             - Path=/api/customer/**
           filters:
             - StripPrefix=2
-        - id: vets-service  
+        - id: vets-route
           uri: lb://vets-service
           predicates:
             - Path=/api/vet/**
           filters:
             - StripPrefix=2
-        - id: visits-service
+        - id: visits-route
           uri: lb://visits-service
           predicates:
             - Path=/api/visit/**
           filters:
             - StripPrefix=2
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
       globalcors:
         cors-configurations:
           '[/**]':
@@ -52,6 +56,7 @@ spring:
               - DELETE
               - OPTIONS
             allowedHeaders: "*"
+            allowCredentials: false
 
 # Configuration Eureka
 eureka:
@@ -64,6 +69,7 @@ eureka:
     hostname: api-gateway
     prefer-ip-address: false
     non-secure-port: 8080
+    instance-id: ${spring.application.name}:${server.port}
 
 # Configuration des metriques Prometheus
 management:
@@ -84,23 +90,27 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
-  # Desactivation complete de Zipkin et tracing
+
+# Desactivation complete de Zipkin et tracing
   tracing:
     enabled: false
   zipkin:
     tracing:
       endpoint: ""
-    
-# Desactivation Zipkin au niveau Spring Boot
+
+# Desactivation Zipkin au niveau Spring Boot (important!)
   sleuth:
     enabled: false
     zipkin:
       enabled: false
+      base-url: ""
 
 # Logging pour debug
 logging:
   level:
     org.springframework.cloud.gateway: INFO
+    org.springframework.cloud.gateway.route: DEBUG
     reactor.netty: INFO
     zipkin2: OFF
     brave: OFF
+    org.springframework.boot.actuate.autoconfigure.tracing: OFF
