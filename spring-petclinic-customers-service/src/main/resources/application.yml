@@ -17,9 +17,9 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
   sql:
     init:
-      mode: always
-      schema-locations: classpath:db/mysql/schema.sql
-      data-locations: classpath:db/mysql/data.sql
+      mode: never
+      # schema-locations: classpath:db/mysql/schema.sql
+      # data-locations: classpath:db/mysql/data.sql
   boot:
     admin:
       client:
