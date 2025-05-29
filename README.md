@@ -127,7 +127,6 @@ cd ../projetpetclinicinitial/scripts
 ### 11. Accéder à l’application via HTTPS
 
 ```bash
-```bash
 curl https://greta25.click
 ```
 
