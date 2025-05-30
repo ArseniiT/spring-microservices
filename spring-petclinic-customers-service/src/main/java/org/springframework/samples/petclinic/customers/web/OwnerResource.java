@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.samples.petclinic.customers.model.Owner;
 import org.springframework.samples.petclinic.customers.model.OwnerRepository;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -65,6 +66,7 @@ class OwnerResource {
      * Read List of Owners
      */
     @GetMapping
+    @Transactional(readOnly = true)
     public List<Owner> findAll() {
         return ownerRepository.findAll();
     }
