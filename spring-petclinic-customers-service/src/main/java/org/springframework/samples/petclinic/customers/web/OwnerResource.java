@@ -41,6 +41,7 @@ import java.util.Optional;
 @Timed("petclinic.owner")
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 class OwnerResource {
 
     private final OwnerRepository ownerRepository;
