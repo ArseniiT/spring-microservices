@@ -19,6 +19,7 @@ spring:
       pool-name: SpringBootJPAHikariCP
       leak-detection-threshold: 60000
       initialization-fail-timeout: ${SPRING_DATASOURCE_HIKARI_INITIALIZATION_FAIL_TIMEOUT:30000}
+      auto-commit: false
   jpa:
     defer-datasource-initialization: false
     hibernate:
