@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# === Configuration RDS pour Spring Petclinic ===
+# === Configuration RDS pour Spring Petclinic avec Security Groups automatiques ===
 AWS_REGION="eu-west-3"
 CLUSTER_NAME="petclinic-cluster"
 STACK_NAME="petclinic-rds"
@@ -32,42 +32,41 @@ get_eks_cluster_info() {
     echo "VPC ID du cluster EKS: $VPC_ID"
 }
 
-# Fonction pour récupérer le Security Group des worker nodes
-get_node_security_group() {
-    echo "Recherche du Security Group des worker nodes..."
+# Fonction pour récupérer TOUS les Security Groups EKS
+get_all_eks_security_groups() {
+    echo "Récupération de tous les Security Groups EKS..."
     
-    SG_ID=$(aws ec2 describe-security-groups \
+    # Récupérer tous les SG avec le tag EKS
+    EKS_SG_IDS=$(aws ec2 describe-security-groups \
         --filters "Name=tag:aws:eks:cluster-name,Values=$CLUSTER_NAME" \
-                  "Name=group-name,Values=*nodegroup*" \
-        --query 'SecurityGroups[0].GroupId' \
+        --query 'SecurityGroups[*].GroupId' \
         --output text \
         --region $AWS_REGION)
     
-    if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
-        echo "Recherche avec le pattern eksctl..."
-        SG_ID=$(aws ec2 describe-security-groups \
-            --filters "Name=group-name,Values=eksctl-${CLUSTER_NAME}-nodegroup-*" \
-            --query 'SecurityGroups[0].GroupId' \
-            --output text \
-            --region $AWS_REGION)
-    fi
+    # Ajouter les SG des nodegroups
+    NODEGROUP_SG_IDS=$(aws ec2 describe-security-groups \
+        --filters "Name=group-name,Values=eksctl-${CLUSTER_NAME}-nodegroup-*" \
+        --query 'SecurityGroups[*].GroupId' \
+        --output text \
+        --region $AWS_REGION)
+    
+    # Combiner tous les SG IDs
+    ALL_SG_IDS="$EKS_SG_IDS $NODEGROUP_SG_IDS"
+    
+    # Nettoyer les espaces et doublons
+    ALL_SG_IDS=$(echo $ALL_SG_IDS | tr ' ' '\n' | sort -u | tr '\n' ' ')
+    
+    echo "Security Groups EKS trouvés: $ALL_SG_IDS"
+    
+    # Prendre le premier SG pour le paramètre CloudFormation (compatibilité)
+    SG_ID=$(echo $ALL_SG_IDS | awk '{print $1}')
     
     if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
-        echo "Recherche dans tous les Security Groups du VPC..."
-        SG_ID=$(aws ec2 describe-security-groups \
-            --filters "Name=vpc-id,Values=$VPC_ID" \
-                      "Name=description,Values=*EKS*node*" \
-            --query 'SecurityGroups[0].GroupId' \
-            --output text \
-            --region $AWS_REGION)
-    fi
-    
-    if [ -z "$SG_ID" ] || [ "$SG_ID" == "None" ]; then
-        echo "Erreur: Impossible de trouver le Security Group des worker nodes EKS"
+        echo "Erreur: Impossible de trouver les Security Groups EKS"
         exit 1
     fi
     
-    echo "Security Group ID trouvé: $SG_ID"
+    echo "Security Group principal pour CloudFormation: $SG_ID"
 }
 
 # Fonction pour récupérer les sous-réseaux dans différentes AZ
@@ -162,6 +161,104 @@ deploy_rds() {
     echo "Stack CloudFormation déployée avec succès"
 }
 
+# Configuration automatique des Security Groups
+configure_rds_security_groups() {
+    echo "=== Configuration automatique des Security Groups RDS ==="
+    
+    # Récupérer l'ID du Security Group RDS créé par CloudFormation
+    RDS_SG_ID=$(aws cloudformation describe-stack-resources \
+        --stack-name $STACK_NAME \
+        --region $AWS_REGION \
+        --query 'StackResources[?LogicalResourceId==`PetclinicDBSecurityGroup`].PhysicalResourceId' \
+        --output text)
+    
+    if [ -z "$RDS_SG_ID" ] || [ "$RDS_SG_ID" == "None" ]; then
+        echo "Erreur: Impossible de récupérer l'ID du Security Group RDS"
+        exit 1
+    fi
+    
+    echo "Security Group RDS: $RDS_SG_ID"
+    
+    # Configurer l'accès pour chaque Security Group EKS
+    for EKS_SG in $ALL_SG_IDS; do
+        if [ ! -z "$EKS_SG" ] && [ "$EKS_SG" != "None" ]; then
+            echo "Configuration de l'accès depuis $EKS_SG vers RDS..."
+            aws ec2 authorize-security-group-ingress \
+                --group-id "$RDS_SG_ID" \
+                --protocol tcp \
+                --port 3306 \
+                --source-group "$EKS_SG" \
+                --region $AWS_REGION 2>/dev/null && echo "  ✓ Règle ajoutée pour $EKS_SG" || echo "  ℹ Règle déjà existante pour $EKS_SG"
+        fi
+    done
+    
+    # Ajouter une règle CIDR pour tout le VPC (sécurité supplémentaire)
+    VPC_CIDR=$(aws ec2 describe-vpcs \
+        --vpc-ids $VPC_ID \
+        --region $AWS_REGION \
+        --query 'Vpcs[0].CidrBlock' \
+        --output text)
+    
+    echo "Configuration de l'accès depuis le VPC CIDR: $VPC_CIDR"
+    aws ec2 authorize-security-group-ingress \
+        --group-id "$RDS_SG_ID" \
+        --protocol tcp \
+        --port 3306 \
+        --cidr "$VPC_CIDR" \
+        --region $AWS_REGION 2>/dev/null && echo "  ✓ Règle CIDR ajoutée" || echo "  ℹ Règle CIDR déjà existante"
+    
+    # Vérification finale des règles
+    echo "Règles configurées pour le Security Group RDS:"
+    aws ec2 describe-security-groups \
+        --group-ids "$RDS_SG_ID" \
+        --region $AWS_REGION \
+        --query 'SecurityGroups[0].IpPermissions[*].[FromPort,ToPort,IpProtocol,UserIdGroupPairs[0].GroupId,IpRanges[0].CidrIp]' \
+        --output table
+}
+
+# Test de connectivité
+test_rds_connectivity() {
+    echo "=== Test de connectivité RDS ==="
+    
+    DB_HOST=$(echo $SECRET_JSON | jq -r '.db_host')
+    DB_USER=$(echo $SECRET_JSON | jq -r '.db_user')
+    DB_PASSWORD=$(echo $SECRET_JSON | jq -r '.db_password')
+    
+    echo "Test de connectivité vers: $DB_HOST"
+    
+    # Créer un pod de test temporaire
+    cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rds-connectivity-test
+spec:
+  containers:
+  - name: mysql
+    image: mysql:8.0
+    command: ['sleep', '300']
+    env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: "test"
+  restartPolicy: Never
+EOF
+    
+    # Attendre que le pod soit prêt
+    kubectl wait --for=condition=Ready pod/rds-connectivity-test --timeout=60s
+    
+    # Tester la connectivité
+    if kubectl exec rds-connectivity-test -- mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" -P3306 -e "SELECT 1 as connectivity_test;" >/dev/null 2>&1; then
+        echo " Test de connectivité RDS réussi!"
+    else
+        echo " Échec du test de connectivité RDS"
+        echo "Vérification des logs du test..."
+        kubectl exec rds-connectivity-test -- mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" -P3306 -e "SELECT 1;" 2>&1 || true
+    fi
+    
+    # Nettoyer le pod de test
+    kubectl delete pod rds-connectivity-test --force --grace-period=0 >/dev/null 2>&1 || true
+}
+
 update_secret_with_endpoint() {
     echo "Récupération de l'endpoint RDS..."
     
@@ -194,13 +291,18 @@ update_secret_with_endpoint() {
     
     rm $TEMP_FILE
     
-    echo "Secret mis à jour avec l'endpoint RDS et le nom de la base de données"
+    echo "Secret AWS mis à jour avec l'endpoint RDS"
+    
+    # Mettre à jour le SECRET_JSON avec les nouvelles valeurs
+    SECRET_JSON=$(aws secretsmanager get-secret-value \
+        --secret-id $SECRET_NAME \
+        --query SecretString \
+        --output text \
+        --region $AWS_REGION)
 }
 
 create_k8s_secret() {
     echo "Création/mise à jour du secret Kubernetes dockerhub-credentials..."
-
-    SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query SecretString --output text --region $AWS_REGION)
 
     DB_HOST=$(echo $SECRET_JSON | jq -r '.db_host')
     DB_PORT=$(echo $SECRET_JSON | jq -r '.db_port')
@@ -227,26 +329,30 @@ create_k8s_secret() {
       --from-literal=certificateArn="$CERTIFICATE_ARN" \
       --from-literal=domainName="$DOMAIN_NAME"
 
-    echo " Secret Kubernetes dockerhub-credentials créé/mis à jour avec succès."
+    echo "Secret Kubernetes dockerhub-credentials créé/mis à jour avec succès"
 }
 
 main() {
     echo "=== Configuration RDS pour Spring Petclinic ==="
     
     get_eks_cluster_info
-    get_node_security_group
+    get_all_eks_security_groups
     get_subnets
     get_db_credentials
     deploy_rds
+    configure_rds_security_groups
     update_secret_with_endpoint
-    create_k8s_secret
+    # create_k8s_secret
+    test_rds_connectivity
     
     echo ""
     echo "=== Déploiement RDS terminé avec succès ==="
     echo "Endpoint RDS: $DB_ENDPOINT"
     echo "Base de données: petclinic"
     echo "Port: 3306"
+    echo "Security Groups configurés automatiquement"
     echo "Le secret '$SECRET_NAME' a été mis à jour dans AWS Secrets Manager et dans Kubernetes"
+    echo "Le secret dans Kubernetes sera synchronisé automatiquement par ExternalSecret dans les prochaines 1-2 minutes"
     echo ""
     echo "Les microservices peuvent maintenant utiliser ces variables d'environnement:"
     echo "- DB_HOST: $DB_ENDPOINT"
