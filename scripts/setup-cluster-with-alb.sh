@@ -80,6 +80,11 @@ eksctl create iamserviceaccount \
   --approve \
   --override-existing-serviceaccounts
 
+# --- Installer les CRD pour External Secrets Operator
+# echo "Installation des CRD pour External Secrets..."
+# kubectl apply -f https://raw.githubusercontent.com/external-secrets/external-secrets/v0.17.0/deploy/crds/bundle.yaml
+
+# --- Installer External Secrets Operator
 echo "Installation de l'opérateur External Secrets..."
 kubectl create namespace external-secrets || true
 helm repo add external-secrets https://charts.external-secrets.io || true
@@ -89,6 +94,18 @@ helm upgrade --install external-secrets external-secrets/external-secrets \
   --set installCRDs=true \
   --set serviceAccount.name=$EXTERNAL_SECRETS_SA_NAME \
   --set serviceAccount.create=false
+
+# --- Attendre que les CRD soient installés
+echo "Attente de l'installation des CRD..."
+for i in {1..10}; do
+  if kubectl get crd clustersecretstores.external-secrets.io &>/dev/null; then
+    echo "CRD ClusterSecretStore est prêt."
+    break
+  else
+    echo "En attente... ($i/10)"
+    sleep 6
+  fi
+done
 
 echo "Attente que tous les pods External Secrets soient disponibles..."
 kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=external-secrets -n external-secrets --timeout=120s || true
