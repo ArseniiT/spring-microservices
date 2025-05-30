@@ -6,25 +6,25 @@ spring:
   profiles:
     active: mysql
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:petclinic}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:root}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:}}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
     hikari:
-      connection-timeout: 60000
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      maximum-pool-size: 5
-      minimum-idle: 1
+      connection-timeout: ${SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT:60000}
+      idle-timeout: ${SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT:300000}
+      max-lifetime: ${SPRING_DATASOURCE_HIKARI_MAX_LIFETIME:1200000}
+      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:5}
+      minimum-idle: ${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:1}
       pool-name: SpringBootJPAHikariCP
       leak-detection-threshold: 60000
-      initialization-fail-timeout: -1  # Permet plusieurs tentatives de connexion
+      initialization-fail-timeout: ${SPRING_DATASOURCE_HIKARI_INITIALIZATION_FAIL_TIMEOUT:30000}
   jpa:
-    defer-datasource-initialization: true  # Diffère l'initialisation
+    defer-datasource-initialization: false
     hibernate:
-      ddl-auto: validate  # Change de 'update' à 'validate' pour éviter les DDL au démarrage
-    show-sql: false
-    database-platform: org.hibernate.dialect.MySQLDialect
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.MySQLDialect}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -37,8 +37,6 @@ spring:
           autocommit: false
         format_sql: false
         use_sql_comments: false
-        hbm2ddl:
-          auto: validate
   sql:
     init:
       mode: never
@@ -49,7 +47,7 @@ spring:
       client:
         url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://admin-server:9090}
         instance:
-          prefer-ip: true
+          prefer-ip: ${SPRING_BOOT_ADMIN_CLIENT_PREFER_IP:true}
 
 server:
   port: ${SERVER_PORT:8081}
@@ -59,21 +57,26 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://discovery-server:8761/eureka}
   instance:
-    hostname: customers-service
-    prefer-ip-address: false
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:customers-service}
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:false}
 
 # Configuration des métriques Prometheus
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,readiness
   endpoint:
     health:
       show-details: always
       db:
-        enabled: false  # Désactive temporairement le health check DB au démarrage
+        enabled: true
+    readiness:
+      enabled: true
     prometheus:
+      enabled: true
+  health:
+    db:
       enabled: true
   metrics:
     export:
@@ -81,19 +84,11 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
-  health:
-    db:
-      enabled: false  # Évite les checks DB pendant l'initialisation
 
-# Désactivation de Zipkin par défaut  
-  tracing:
-    enabled: false
-    zipkin:
-      endpoint: ""
-
-# Configuration de logging pour débugger
+# Configuration du logging pour le debugging (temporaire)
 logging:
   level:
-    com.zaxxer.hikari: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.springframework.jdbc: DEBUG
+    com.zaxxer.hikari: INFO
+    org.springframework.jdbc: INFO
+    org.hibernate.SQL: ${SPRING_JPA_SHOW_SQL:false}
+    root: INFO
