@@ -6,11 +6,12 @@ spring:
   profiles:
     active: mysql
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=trueautoReconnect=true&autoCommit=false
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true&autoCommit=false
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
     hikari:
+      auto-commit: false
       connection-timeout: ${SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT:60000}
       idle-timeout: ${SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT:300000}
       max-lifetime: ${SPRING_DATASOURCE_HIKARI_MAX_LIFETIME:1200000}
@@ -22,20 +23,18 @@ spring:
   jpa:
     defer-datasource-initialization: false
     hibernate:
-      # ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
       ddl-auto: none
-    show-sql: ${SPRING_JPA_SHOW_SQL:false}
-    database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.MySQLDialect}
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQLDialect
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        connection:
+          provider_disables_autocommit: true
         jdbc:
           lob:
             non_contextual_creation: true
           time_zone: UTC
-        connection:
-          provider_disables_autocommit: true
-          autocommit: false
         format_sql: false
         use_sql_comments: false
   sql:
@@ -61,7 +60,6 @@ eureka:
     hostname: ${EUREKA_INSTANCE_HOSTNAME:customers-service}
     prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:false}
 
-# Configuration des métriques Prometheus
 management:
   endpoints:
     web:
@@ -86,13 +84,12 @@ management:
     tags:
       application: ${spring.application.name}
 
-# Configuration du logging pour le debugging (temporaire)
 logging:
   level:
     org.springframework.web: DEBUG
     org.springframework.transaction: DEBUG
-    org.springframework.samples.petclinic.customers: DEBUG
-    com.zaxxer.hikari: DEBUG
-    org.springframework.jdbc: DEBUG
-    org.hibernate.SQL: ${SPRING_JPA_SHOW_SQL:false}
-    root: DEBUG
+    org.springframework.samples.petclinic.customers: INFO
+    com.zaxxer.hikari: INFO
+    org.springframework.jdbc: WARN
+    org.hibernate.SQL: false
+    root: INFO
