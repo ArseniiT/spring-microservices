@@ -89,7 +89,9 @@ management:
 # Configuration du logging pour le debugging (temporaire)
 logging:
   level:
-    com.zaxxer.hikari: INFO
-    org.springframework.jdbc: INFO
+    org.springframework.web: DEBUG
+    org.springframework.samples.petclinic.customers: DEBUG
+    com.zaxxer.hikari: DEBUG
+    org.springframework.jdbc: DEBUG
     org.hibernate.SQL: ${SPRING_JPA_SHOW_SQL:false}
-    root: INFO
+    root: DEBUG
