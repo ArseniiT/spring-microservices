@@ -91,6 +91,7 @@ management:
 logging:
   level:
     org.springframework.web: DEBUG
+    org.springframework.transaction: DEBUG
     org.springframework.samples.petclinic.customers: DEBUG
     com.zaxxer.hikari: DEBUG
     org.springframework.jdbc: DEBUG
