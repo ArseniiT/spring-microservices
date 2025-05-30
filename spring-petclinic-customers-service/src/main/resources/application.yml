@@ -6,7 +6,7 @@ spring:
   profiles:
     active: mysql
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -14,15 +14,31 @@ spring:
       connection-timeout: 60000
       idle-timeout: 300000
       max-lifetime: 1200000
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 5
+      minimum-idle: 1
       pool-name: SpringBootJPAHikariCP
       leak-detection-threshold: 60000
+      initialization-fail-timeout: -1  # Permet plusieurs tentatives de connexion
   jpa:
+    defer-datasource-initialization: true  # Diffère l'initialisation
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate  # Change de 'update' à 'validate' pour éviter les DDL au démarrage
     show-sql: false
     database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
+          time_zone: UTC
+        connection:
+          provider_disables_autocommit: true
+          autocommit: false
+        format_sql: false
+        use_sql_comments: false
+        hbm2ddl:
+          auto: validate
   sql:
     init:
       mode: never
@@ -55,6 +71,8 @@ management:
   endpoint:
     health:
       show-details: always
+      db:
+        enabled: false  # Désactive temporairement le health check DB au démarrage
     prometheus:
       enabled: true
   metrics:
@@ -63,9 +81,19 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
+  health:
+    db:
+      enabled: false  # Évite les checks DB pendant l'initialisation
 
 # Désactivation de Zipkin par défaut  
   tracing:
     enabled: false
     zipkin:
       endpoint: ""
+
+# Configuration de logging pour débugger
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.jdbc: DEBUG
